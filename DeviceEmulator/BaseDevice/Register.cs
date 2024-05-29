@@ -17,13 +17,14 @@ namespace DeviceEmulator.BaseDevice
         public Register(IDeviceRtc rtc, string sogialName, uint startValue, IScaleAndUnit scaleAndUnit, IncrementTipe incrementTipe)
         {
             Rtc = rtc;
-            SogialName = sogialName;
+            Name = sogialName;
             Value = startValue;
             ScaleAndUnit = scaleAndUnit;
             _startValue = startValue;
+            _incrementTipe = incrementTipe;
         }
 
-        public string SogialName { get; set; }
+        public string Name { get; set; }
         public uint Value { get; set; }
         public IScaleAndUnit ScaleAndUnit { get; private set; }
 
@@ -50,19 +51,19 @@ namespace DeviceEmulator.BaseDevice
                     }
                     else if (_incrementTipe == IncrementTipe.Increment)
                     {
-                        Value++;
+                        Value += Convert.ToUInt32(Math.Abs(rrrr()));
                     }
                     else if (_incrementTipe == IncrementTipe.Decrement)
                     {
                         if (Value > 0)
                         {
-                            Value--;
+                            Value -= Convert.ToUInt32(Math.Abs(rrrr()));
                         }
                     }
-                    Debug.WriteLine("Register " + Value);
+                    Debug.WriteLine("Register " +Name+": "+ Value);
                 }
 
-                await Task.Delay(100); // Добавляем небольшую задержку
+                await Task.Delay(1); // Добавляем небольшую задержку
             }
         }
 
@@ -85,6 +86,11 @@ namespace DeviceEmulator.BaseDevice
             }
 
             return values[values.Length - 1]; // fallback
+        }
+
+        public string GetValue()
+        {
+            return Convert.ToString( Value * Math.Pow(10, ScaleAndUnit.Scale));
         }
     }
 

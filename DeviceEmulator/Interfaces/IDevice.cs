@@ -6,7 +6,9 @@
         IRealTimeClock? RealTimeClock { get; }
         IPropetryCollection? PuppetryCollection { get; }
 
-        IEnumerable<IRegister> Registers { get; }
+        IEnumerable<IRegister>? Registers { get; }
+        IEnumerable<IProfile>? Profiles { get; }
+
     }
 
     public interface IPropetryCollection
@@ -46,10 +48,14 @@
         public abstract long I { get; }
     }
 
-    public interface IRegister
+    public interface IValue
     {
-        
-        string SogialName { get; set; }
+        string GetValue();
+    }
+
+    public interface IRegister:IValue
+    { 
+        string Name { get; set; }
         uint Value { get; set; }
         IScaleAndUnit ScaleAndUnit { get; }
         Task StartWatch(CancellationToken token);
@@ -61,4 +67,15 @@
         byte Unit { get; set; }
     }
 
+    public interface IProfile
+    {
+        string Name { get; }
+
+        uint Period { get; } //sek
+
+        IEnumerable<IValue> GetValues();
+
+        IEnumerable<IValue> GetValues(DateTime from, DateTime to);
+        Task StartMonitoring(CancellationToken token);
+    }
 }
