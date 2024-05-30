@@ -22,15 +22,12 @@ namespace DeviceEmulator.BaseDevice
         public Property(string name, string value)
         {
             Name = name;
-            _value = value;
+            Value = value;
         }
 
         public string Name { get; }
-        private string _value;
 
-        public string GetProperty()
-        {
-            return _value;
-        }
+        public string Value { get; }
+
     }
 }

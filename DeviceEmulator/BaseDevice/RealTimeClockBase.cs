@@ -5,22 +5,21 @@ namespace DeviceEmulator.BaseDevice
     public class RealTimeClockBase : IRealTimeClock
     {
         private long _i;
-        private int _step = 1;
-
-        public long I { get => _i; private set => _i = value; }
+        private int _step = 60;
+        private Task? _runTask;
+        private CancellationTokenSource? _cts;
 
         public int Step => _step;
-
+        public long I { get => _i; private set => _i = value; }
+        public DateTime EndTimeClock { get; }
+        public object Locker { get; }
+        public DateTime StartTimeClock { get; }
         public RealTimeClockBase(object looker, DateTime startTimeClock)
         {
             this.Locker = looker;
             StartTimeClock = startTimeClock;
             I = ((DateTimeOffset)StartTimeClock).ToUnixTimeSeconds();
         }
-        public DateTime EndTimeClock { get; }
-        public object Locker { get; }
-
-        public DateTime StartTimeClock { get; }
 
         public DateTime GetRealTimeClock()
         {
@@ -36,8 +35,7 @@ namespace DeviceEmulator.BaseDevice
                 {
                     return;
                 }
-                await Task.Delay(1, cancellationToken);
-
+                await Task.Delay(10, cancellationToken);
             }
             return;
         }
@@ -74,7 +72,5 @@ namespace DeviceEmulator.BaseDevice
 
             return true;
         }
-        private Task? _runTask;
-        private CancellationTokenSource? _cts;
     }
 }

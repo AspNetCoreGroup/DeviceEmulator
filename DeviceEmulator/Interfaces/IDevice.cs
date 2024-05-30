@@ -6,8 +6,8 @@
         IRealTimeClock? RealTimeClock { get; }
         IPropetryCollection? PuppetryCollection { get; }
 
-        IEnumerable<IRegister>? Registers { get; }
-        IEnumerable<IProfile>? Profiles { get; }
+        IEnumerable<IRegister> Registers { get; }
+        IEnumerable<IProfile> Profiles { get; }
 
     }
 
@@ -19,7 +19,7 @@
     public interface IProperty
     {
         string Name { get; }
-        string GetProperty();
+        string Value { get; }
     }
 
     public interface IRealTimeClock : IRtc
@@ -73,9 +73,9 @@
 
         uint Period { get; } //sek
 
-        IEnumerable<IValue> GetValues();
+        Task<IEnumerable<IValue>?> GetValues();
 
-        IEnumerable<IValue> GetValues(DateTime from, DateTime to);
+        Task<IEnumerable<IValue>?> GetValues(DateTime from, DateTime to);
         Task StartMonitoring(CancellationToken token);
     }
 }

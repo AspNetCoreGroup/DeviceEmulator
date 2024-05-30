@@ -1,11 +1,6 @@
 ﻿using DeviceEmulator.Interfaces;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace DeviceEmulator.BaseDevice
 {
@@ -28,14 +23,14 @@ namespace DeviceEmulator.BaseDevice
         public uint Value { get; set; }
         public IScaleAndUnit ScaleAndUnit { get; private set; }
 
+        Task? WatchTask;
 
-        public  Task StartWatch(CancellationToken token)
+        public Task StartWatch(CancellationToken token)
         {
 
-            WathTask  =  WatchLoop(token);
+            WatchTask = WatchLoop(token);
             return Task.CompletedTask;
         }
-        Task WathTask;
 
         private async Task WatchLoop(CancellationToken token)
         {
@@ -60,10 +55,10 @@ namespace DeviceEmulator.BaseDevice
                             Value -= Convert.ToUInt32(Math.Abs(rrrr()));
                         }
                     }
-                    Debug.WriteLine("Register " +Name+": "+ Value);
+                   // Debug.WriteLine("Register " + Name + ": " + Value);
                 }
 
-                await Task.Delay(1); // Добавляем небольшую задержку
+                await Task.Delay(1, token);// Добавляем небольшую задержку
             }
         }
 
@@ -90,7 +85,7 @@ namespace DeviceEmulator.BaseDevice
 
         public string GetValue()
         {
-            return Convert.ToString( Value * Math.Pow(10, ScaleAndUnit.Scale));
+            return Convert.ToString(Value * Math.Pow(10, ScaleAndUnit.Scale));
         }
     }
 

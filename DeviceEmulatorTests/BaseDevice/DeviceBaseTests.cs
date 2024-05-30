@@ -1,4 +1,5 @@
 ﻿using DeviceEmulator.BaseDevice;
+using DeviceEmulator.Device;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace DeviceEmulator.Tests
         public async Task Init_DeviceBase_Success()
         {
             // Arrange
-            var deviceBase = new DeviceBase();
+            var deviceBase = new EDevice();
             var cancellationTokenSource = new CancellationTokenSource();
             var initStr = "Init String";
 
@@ -33,15 +34,15 @@ namespace DeviceEmulator.Tests
         public async Task StartStop_DeviceBase_Success()
         {
             // Arrange
-            var deviceBase = new DeviceBase();
+            var deviceBase = new EDevice();
             var cancellationTokenSource = new CancellationTokenSource();
             await deviceBase.Init("Init String", cancellationTokenSource.Token);
 
             // Act
             var startResult =  deviceBase.RealTimeClock?.StartRtc(cancellationTokenSource.Token);
-            deviceBase.Registers.ToList().ForEach(r => r.StartWatch(cancellationTokenSource.Token));
+            deviceBase?.Registers?.ToList().ForEach(r => r.StartWatch(cancellationTokenSource.Token));
             cancellationTokenSource.Cancel();
-            var stopResult =  deviceBase.RealTimeClock?.StopRtc();
+            var stopResult =  deviceBase?.RealTimeClock?.StopRtc();
 
             // Assert
             Xunit.Assert.True(startResult);
@@ -52,7 +53,7 @@ namespace DeviceEmulator.Tests
         public async Task RealTimeClock_StartStop_Success()
         {
             // Arrange
-            var deviceBase = new DeviceBase();
+            var deviceBase = new EDevice();
             var cancellationTokenSource = new CancellationTokenSource();
             await deviceBase.Init("Init String", cancellationTokenSource.Token);
 

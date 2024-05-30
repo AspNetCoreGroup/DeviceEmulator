@@ -1,75 +1,61 @@
-﻿using DeviceEmulator.Interfaces;
+﻿using DeviceEmulator.Device;
+using DeviceEmulator.Interfaces;
 
 namespace DeviceEmulator.BaseDevice
 {
-    public class DeviceBase : IDevice
+    public abstract class DeviceBase : IDevice, IGetProfile, IGetProperty
     {
-        
-        object Locker = new();
-        public IRealTimeClock? RealTimeClock { get; private set; }
 
-        public IPropetryCollection? PuppetryCollection { get; private set; }
+        protected object Locker = new();
+        public IRealTimeClock? RealTimeClock { get; protected set; }
 
-        public IEnumerable<IRegister>? Registers { get; private set; }
+        public abstract IPropetryCollection? PuppetryCollection { get; protected set; }
 
-        public IEnumerable<IProfile>? Profiles { get; private set; }
+        public abstract IEnumerable<IRegister> Registers { get; protected set; }
 
-        public Task<bool> Init(string initStr, CancellationToken cancellationToken)
-        {
-            RealTimeClock = new RealTimeClockBase(Locker, new DateTime(2022, 1, 1));
+        public abstract IEnumerable<IProfile> Profiles { get; protected set; }
 
-            PuppetryCollection = new PropetryCollection(new List<IProperty>
-            {
-                new Property("SerialNumber", GenerateSerialNumber()),
-                new Property("DeviceType", GenerateDeviceType())
-            });
+        public abstract Task<bool> Init(string initStr, CancellationToken cancellationToken);
 
-            var u = new Register(RealTimeClock, "U", 230, new ScaleAndUnit() { Scale = 0, Unit = 1 }, IncrementTipe.UpDown);
-            var Ain = new Register(RealTimeClock, "Ain", 10, new ScaleAndUnit() { Scale = 0, Unit = 2 }, IncrementTipe.Increment);
-
-            Registers = new List<IRegister>()
-            {
-                u,
-                Ain
-            };
-            var Registers3 = new List<IRegister>()
-            {
-                u,
-                Ain
-            };
-
-
-            Profiles = new List<IProfile>()
-            {
-                new Profile(RealTimeClock,Registers3,"I", 5 )
-            };
-
-            foreach (var i in Registers)
-            {
-                i.StartWatch(cancellationToken);
-            }
-
-            foreach (var i in Profiles)
-            {
-                i.StartMonitoring(cancellationToken);
-            }
-
-
-
-
-            return Task.FromResult(RealTimeClock?.StartRtc(cancellationToken)??false);
-        }
-        private static string GenerateSerialNumber()
+        protected string GenerateSerialNumber()
         {
             Random random = new Random();
             return new string(Enumerable.Repeat("0123456789", 10).Select(s => s[random.Next(s.Length)]).ToArray());
         }
 
-        private static string GenerateDeviceType()
+        protected virtual string GenerateDeviceType()
         {
             string[] deviceTypes = { "TypeA1", "TypeA2", "TypeA3" };
             Random random = new Random();
             return deviceTypes[random.Next(deviceTypes.Length)];
+        }
+
+        public async Task<IEquatable<IValue>?> GetProfile(string name)
+        {
+            IProfile? profile = Profiles.FirstOrDefault(x => x.Name == name);
+            IEnumerable<IValue>? values = profile != null
+                ? await profile.GetValues()
+                : Enumerable.Empty<IValue>();
+            return (IEquatable<IValue>?)values;
+        }
+
+        public async Task<IEquatable<IValue>?> GetProfile(string name, DateTime begin, DateTime end)
+        {
+            IProfile? profile = Profiles.FirstOrDefault(x => x.Name == name);
+            IEnumerable<IValue>? values = profile != null
+                ? await profile.GetValues(begin, end)
+                : Enumerable.Empty<IValue>();
+            return (IEquatable<IValue>?)values;
+        }
+
+        public Task<List<IProperty>> GetProperty()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<IProperty>> GetProperty(string name)
+        {
+            throw new NotImplementedException();
         }
     }
 }
