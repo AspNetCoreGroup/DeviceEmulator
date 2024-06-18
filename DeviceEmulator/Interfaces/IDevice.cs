@@ -37,7 +37,7 @@
         int Step { get; }
         bool StartRtc(CancellationToken cancellationToken);
         bool StopRtc();
-        object Locker { get; }
+        //object Locker { get; }
     }
 
     public interface IDeviceRtc
@@ -53,18 +53,29 @@
         string GetValue();
     }
 
-    public interface IRegister:IValue
-    { 
+    public interface IFRegister : IRegister
+    {
+        void IncreaseValue();
+    }
+
+    public interface IRegister : IValue
+    {
         string Name { get; set; }
         uint Value { get; set; }
         IScaleAndUnit ScaleAndUnit { get; }
         Task StartWatch(CancellationToken token);
     }
+
     public interface IScaleAndUnit
     {
         
         sbyte Scale { get; set; }
         byte Unit { get; set; }
+    }
+
+    public interface IFProfile: IProfile
+    {
+        void WriteProfile();
     }
 
     public interface IProfile

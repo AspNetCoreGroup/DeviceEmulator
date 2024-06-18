@@ -2,9 +2,9 @@
 using DeviceEmulator.Interfaces;
 using System.Diagnostics;
 
-namespace DeviceEmulator.BaseDevice
+namespace DeviceEmulator.UseRTC
 {
-    public class Profile : IProfile
+    public class ProfileUseRTC : IProfile, IFProfile
     {
         private IRealTimeClock Rtc { get; }
         private IEnumerable<IRegister> Registers { get; }
@@ -14,7 +14,7 @@ namespace DeviceEmulator.BaseDevice
         public string Name { get; }
         public uint Period { get; }
 
-        public Profile(IRealTimeClock deviceRtc, IEnumerable<IRegister> register, string name, uint period)
+        public ProfileUseRTC(IRealTimeClock deviceRtc, IEnumerable<IRegister> register, string name, uint period)
         {
             Rtc = deviceRtc;
             Registers = register;
@@ -36,7 +36,7 @@ namespace DeviceEmulator.BaseDevice
                     return timestamp >= from && timestamp <= to;
                 }
                 return false;
-            })??null);
+            }) ?? null);
         }
         public Task StartMonitoring(CancellationToken token)
         {
@@ -57,21 +57,47 @@ namespace DeviceEmulator.BaseDevice
             {
                 if (lastDT < Rtc.I)
                 {
-                   // Debug.WriteLine(Rtc.I);
+                    // Debug.WriteLine(Rtc.I);
                     if (Rtc.I % Period == 0)
                     {
-                        DateTime timestamp = Rtc.GetRealTimeClock();
-                        foreach (IRegister value in Registers)
-                        {
-                            _values.Add(new DataRegisterValue(timestamp, value.Value));
-
-                            Debug.WriteLine(value.Name + ": " + _values.Last().GetValue());
-                        }
-
+                        SaveValueProfile();
                     }
                     lastDT = Rtc.I;
                 }
                 await Task.Delay(1);
+            }
+        }
+
+
+        public void SaveValueProfile()
+        {
+            DateTime timestamp = Rtc.GetRealTimeClock();
+            foreach (IRegister value in Registers)
+            {
+
+                _values.Add(new DataRegisterValue(timestamp, value.Value));
+                if (i == 0)
+                {
+                    Debug.WriteLine(value.Name + ": " + _values.Last().GetValue());
+                    i = 1000;
+                }
+                else i--;
+            }
+        }
+
+        uint i = 1000;
+        long lastDTF = 0;
+        public void WriteProfile()
+        {
+
+            if (lastDTF < Rtc.I)
+            {
+                // Debug.WriteLine(Rtc.I);
+                if (Rtc.I % Period == 0)
+                {
+                    SaveValueProfile();
+                }
+                lastDTF = Rtc.I;
             }
         }
     }

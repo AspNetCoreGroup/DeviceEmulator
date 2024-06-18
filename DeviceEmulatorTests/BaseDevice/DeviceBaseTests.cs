@@ -39,10 +39,10 @@ namespace DeviceEmulator.Tests
             await deviceBase.Init("Init String", cancellationTokenSource.Token);
 
             // Act
-            var startResult =  deviceBase.RealTimeClock?.StartRtc(cancellationTokenSource.Token);
+            var startResult = deviceBase.RealTimeClock?.StartRtc(cancellationTokenSource.Token);
             deviceBase?.Registers?.ToList().ForEach(r => r.StartWatch(cancellationTokenSource.Token));
             cancellationTokenSource.Cancel();
-            var stopResult =  deviceBase?.RealTimeClock?.StopRtc();
+            var stopResult = deviceBase?.RealTimeClock?.StopRtc();
 
             // Assert
             Xunit.Assert.True(startResult);
@@ -60,7 +60,25 @@ namespace DeviceEmulator.Tests
             // Act
             //var startResult =  deviceBase.RealTimeClock?.StartRtc(cancellationTokenSource.Token);
             await Task.Delay(100000);
-            var stopResult =  deviceBase.RealTimeClock?.StopRtc();
+            var stopResult = deviceBase.RealTimeClock?.StopRtc();
+
+            // Assert
+            //Xunit.Assert.True(startResult);
+            //Xunit.Assert.True(stopResult);
+        }
+
+        [Fact]
+        public async Task FRTC_StartStop_Success()
+        {
+            // Arrange
+            var deviceBase = new EDeviceDelegat();
+            var cancellationTokenSource = new CancellationTokenSource();
+            await deviceBase.Init("Init String", cancellationTokenSource.Token);
+
+            // Act
+            //var startResult =  deviceBase.RealTimeClock?.StartRtc(cancellationTokenSource.Token);
+            await Task.Delay(100000);
+            var stopResult = deviceBase.RealTimeClock?.StopRtc();
 
             // Assert
             //Xunit.Assert.True(startResult);

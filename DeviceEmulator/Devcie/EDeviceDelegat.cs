@@ -1,16 +1,12 @@
 ﻿using DeviceEmulator.BaseDevice;
+using DeviceEmulator.FastStorage;
 using DeviceEmulator.Interfaces;
 using DeviceEmulator.UseRTC;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
+using static DeviceEmulator.FastStorage.FastRTC;
 
 namespace DeviceEmulator.Device
 {
-    public class EDevice : DeviceBase
+    public class EDeviceDelegat : DeviceBase
     {
         public override IPropetryCollection? PuppetryCollection { get; protected set; }
         public override IEnumerable<IRegister> Registers { get; protected set; } = new List<IRegister>();
@@ -19,13 +15,13 @@ namespace DeviceEmulator.Device
         public override Task<bool> Init(string initStr, CancellationToken cancellationToken)
         {
 
-            RealTimeClock = new RealTimeClockBase(new DateTime(2022, 1, 1), DateTime.Now, 60);
 
             PuppetryCollection = new PropetryCollection(new List<IProperty>
             {
                 new Property("SerialNumber", GenerateSerialNumber()),
                 new Property("DeviceType", GenerateDeviceType())
             });
+            RealTimeClock = new FastRTC(new DateTime(2022, 1, 1), DateTime.Now, 60);
 
             IRegister u = new RegisterUseRTC(RealTimeClock, "U", 230, new ScaleAndUnit() { Scale = 0, Unit = 1 }, IncrementTipe.UpDown);
             IRegister Ain = new RegisterUseRTC(RealTimeClock, "Ain", 10, new ScaleAndUnit() { Scale = 0, Unit = 2 }, IncrementTipe.Increment);
@@ -42,22 +38,29 @@ namespace DeviceEmulator.Device
                 Ain
             };
 
-
             Profiles = new List<IProfile>()
             {
-                new ProfileUseRTC(RealTimeClock,Registers3,"I", 900 )
+                new ProfileUseRTC(RealTimeClock,Registers3,"Current", 900 )
             };
 
-            foreach (IRegister i in Registers)
+            List<IncreaseRegister> IncreaseRegister  = new List<IncreaseRegister>();
+            foreach (var i in Registers)
             {
-                i.StartWatch(cancellationToken);
+                IFRegister fRegister = (IFRegister)i;
+                IncreaseRegister.Add(new FastRTC.IncreaseRegister(fRegister.IncreaseValue));
             }
 
-            foreach (IProfile i in Profiles)
+            List<WriteProfile> WriteProfile = new List<WriteProfile>();
+            foreach (var i in Profiles)
             {
-                i.StartMonitoring(cancellationToken);
+                IFProfile fRegister = (IFProfile)i;
+                IncreaseRegister.Add(new FastRTC.IncreaseRegister(fRegister.WriteProfile));
             }
 
+
+            var IFastRtc  = (IFastRtc)RealTimeClock;
+
+            IFastRtc.Init(IncreaseRegister.ToArray(), WriteProfile.ToArray());
 
 
 

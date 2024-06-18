@@ -4,21 +4,21 @@ namespace DeviceEmulator.BaseDevice
 {
     public class RealTimeClockBase : IRealTimeClock
     {
-        private long _i;
-        private int _step = 60;
+        // private int _step = 60;
         private Task? _runTask;
         private CancellationTokenSource? _cts;
 
-        public int Step => _step;
-        public long I { get => _i; private set => _i = value; }
+        public int Step { get; }
+        public long I { get; protected set; }
         public DateTime EndTimeClock { get; }
-        public object Locker { get; }
+        //public object Locker { get; }
         public DateTime StartTimeClock { get; }
-        public RealTimeClockBase(object looker, DateTime startTimeClock)
+        public RealTimeClockBase(DateTime startTimeClock, DateTime endTimeClock, int step)
         {
-            this.Locker = looker;
             StartTimeClock = startTimeClock;
             I = ((DateTimeOffset)StartTimeClock).ToUnixTimeSeconds();
+            Step = step;
+            EndTimeClock = endTimeClock;
         }
 
         public DateTime GetRealTimeClock()
@@ -26,12 +26,12 @@ namespace DeviceEmulator.BaseDevice
             return DateTimeOffset.FromUnixTimeSeconds(I).UtcDateTime;
         }
 
-        private async Task Run(CancellationToken cancellationToken)
+        protected virtual  async Task Run(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                I += _step;
-                if (((DateTimeOffset)StartTimeClock).ToUnixTimeSeconds() > I)
+                I += Step;
+                if (((DateTimeOffset)EndTimeClock).ToUnixTimeSeconds() < I)
                 {
                     return;
                 }

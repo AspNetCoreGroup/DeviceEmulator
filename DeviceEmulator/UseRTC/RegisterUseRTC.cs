@@ -4,19 +4,19 @@ using System.Threading;
 
 namespace DeviceEmulator.BaseDevice
 {
-    public class Register : IRegister
+    public class RegisterUseRTC : IFRegister, IRegister
     {
-        IncrementTipe _incrementTipe;
+        IncrementTipe _incrementType;
         IDeviceRtc Rtc { get; }
         uint _startValue;
-        public Register(IDeviceRtc rtc, string sogialName, uint startValue, IScaleAndUnit scaleAndUnit, IncrementTipe incrementTipe)
+        public RegisterUseRTC(IDeviceRtc rtc, string sogialName, uint startValue, IScaleAndUnit scaleAndUnit, IncrementTipe incrementTipe)
         {
             Rtc = rtc;
             Name = sogialName;
             Value = startValue;
             ScaleAndUnit = scaleAndUnit;
             _startValue = startValue;
-            _incrementTipe = incrementTipe;
+            _incrementType = incrementTipe;
         }
 
         public string Name { get; set; }
@@ -40,25 +40,30 @@ namespace DeviceEmulator.BaseDevice
                 if (oldRtc != Rtc.I)
                 {
                     oldRtc = Rtc.I;
-                    if (_incrementTipe == IncrementTipe.UpDown)
-                    {
-                        Value = _startValue + (uint)rrrr();
-                    }
-                    else if (_incrementTipe == IncrementTipe.Increment)
-                    {
-                        Value += Convert.ToUInt32(Math.Abs(rrrr()));
-                    }
-                    else if (_incrementTipe == IncrementTipe.Decrement)
-                    {
-                        if (Value > 0)
-                        {
-                            Value -= Convert.ToUInt32(Math.Abs(rrrr()));
-                        }
-                    }
-                   // Debug.WriteLine("Register " + Name + ": " + Value);
+                    IncreaseValue();
+                    // Debug.WriteLine("Register " + Name + ": " + Value);
                 }
 
                 await Task.Delay(1, token);// Добавляем небольшую задержку
+            }
+        }
+
+        protected void IncreaseValue()
+        {
+            if (_incrementType == IncrementTipe.UpDown)
+            {
+                Value = _startValue + (uint)rrrr();
+            }
+            else if (_incrementType == IncrementTipe.Increment)
+            {
+                Value += Convert.ToUInt32(Math.Abs(rrrr()));
+            }
+            else if (_incrementType == IncrementTipe.Decrement)
+            {
+                if (Value > 0)
+                {
+                    Value -= Convert.ToUInt32(Math.Abs(rrrr()));
+                }
             }
         }
 
@@ -87,6 +92,8 @@ namespace DeviceEmulator.BaseDevice
         {
             return Convert.ToString(Value * Math.Pow(10, ScaleAndUnit.Scale));
         }
+
+        void IFRegister.IncreaseValue() => IncreaseValue();
     }
 
     public enum IncrementTipe

@@ -13,7 +13,7 @@ namespace DeviceEmulator.Tests
         {
             var startTime = DateTime.UtcNow;
             startTime = new DateTime(startTime.Year, startTime.Month, startTime.Day, startTime.Hour, startTime.Minute, 0, DateTimeKind.Utc);
-            var rtc = new RealTimeClockBase(new object(), startTime);
+            var rtc = new RealTimeClockBase(startTime, DateTime.UtcNow.AddYears(1), 100);
 
             Xunit.Assert.Equal(startTime, rtc.StartTimeClock);
             Xunit.Assert.Equal(startTime, rtc.GetRealTimeClock());
@@ -23,7 +23,7 @@ namespace DeviceEmulator.Tests
         public async Task StartStopRtcTest()
         {
             var startTime = DateTime.UtcNow;
-            var rtc = new RealTimeClockBase(new object(), startTime);
+            var rtc = new RealTimeClockBase(startTime, DateTime.UtcNow.AddYears(1), 100);
             var cancellationToken = new CancellationTokenSource();
 
             bool started = rtc.StartRtc(cancellationToken.Token);
@@ -42,7 +42,7 @@ namespace DeviceEmulator.Tests
         public async Task RtcRunsCorrectlyTest()
         {
             var startTime = DateTime.UtcNow;
-            var rtc = new RealTimeClockBase(new object(), startTime);
+            var rtc = new RealTimeClockBase(startTime, DateTime.UtcNow.AddYears(1), 100);
             var cancellationToken = new CancellationTokenSource();
 
             rtc.StartRtc(cancellationToken.Token);
@@ -59,7 +59,7 @@ namespace DeviceEmulator.Tests
         [Fact]
         public void StopRtcNotRunningTest()
         {
-            var rtc = new RealTimeClockBase(new object(), DateTime.UtcNow);
+            var rtc = new RealTimeClockBase(DateTime.UtcNow, DateTime.UtcNow.AddYears(1), 100);
             bool result = rtc.StopRtc();
 
             Xunit.Assert.False(result); // Should return false if RTC was not running
