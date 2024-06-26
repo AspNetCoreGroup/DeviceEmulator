@@ -24,24 +24,44 @@ namespace DeviceEmulator.Device
             RealTimeClock = new FastRTC(new DateTime(2022, 1, 1), DateTime.Now, 60);
 
             IRegister u = new RegisterUseRTC(RealTimeClock, "U", 230, new ScaleAndUnit() { Scale = 0, Unit = 1 }, IncrementTipe.UpDown);
-            IRegister Ain = new RegisterUseRTC(RealTimeClock, "Ain", 10, new ScaleAndUnit() { Scale = 0, Unit = 2 }, IncrementTipe.Increment);
-            IRegister Qin = new RegisterUseRTC(RealTimeClock, "Qin", 10, new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
+
+            IRegister I = new RegisterUseRTC(RealTimeClock, "I", 50, new ScaleAndUnit() { Scale = 0, Unit = 2 }, IncrementTipe.UpDown);
+
+            IRegister Ain = new RegisterUseRTC(RealTimeClock, "Ain", 10, new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
+            IRegister Aout = new RegisterUseRTC(RealTimeClock, "Aout", 10, new ScaleAndUnit() { Scale = 0, Unit = 3}, IncrementTipe.Increment);
+            IRegister Rin = new RegisterUseRTC(RealTimeClock, "Rin", 10, new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
+            IRegister Rout = new RegisterUseRTC(RealTimeClock, "Rout", 10, new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
+
+
+
 
             Registers = new List<IRegister>()
             {
                 u,
-                Ain
+                I,
+                Ain,
+                Aout,
+                Rin,
+                Rout
             };
-            List<IRegister> Registers3 = new List<IRegister>()
+            List<IRegister> RegistersCurrent = new List<IRegister>()
             {
                 u,
-                Ain
+                I,
             };
-
+            List<IRegister> RegistersHour = new List<IRegister>()
+            {
+                Ain,
+                Aout,
+                Rin,
+                Rout
+            };
             Profiles = new List<IProfile>()
             {
-                new ProfileUseRTC(RealTimeClock,Registers3,"Current", 900 )
+                new ProfileUseRTC(RealTimeClock,RegistersCurrent,"Current", 900 ),
+                new ProfileUseRTC(RealTimeClock,RegistersHour,"Hour", 3600 )
             };
+
 
             List<IncreaseRegister> IncreaseRegister  = new List<IncreaseRegister>();
             foreach (var i in Registers)
