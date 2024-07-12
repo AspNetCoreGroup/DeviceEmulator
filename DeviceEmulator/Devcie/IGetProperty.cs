@@ -1,4 +1,5 @@
-﻿using DeviceEmulator.Interfaces;
+﻿using CommonTypeDevice.Property;
+using DeviceEmulator.Interfaces;
 
 namespace DeviceEmulator.Device
 {

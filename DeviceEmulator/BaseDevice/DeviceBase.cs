@@ -1,4 +1,5 @@
-﻿using DeviceEmulator.Device;
+﻿using CommonTypeDevice.Property;
+using DeviceEmulator.Device;
 using DeviceEmulator.Interfaces;
 
 namespace DeviceEmulator.BaseDevice
@@ -9,11 +10,13 @@ namespace DeviceEmulator.BaseDevice
         protected object Locker = new();
         public IRealTimeClock? RealTimeClock { get; protected set; }
 
-        public abstract IPropetryCollection? PuppetryCollection { get; protected set; }
+        //public abstract IPropetryCollection? PuppetryCollection { get; protected set; }
 
         public abstract IEnumerable<IRegister> Registers { get; protected set; }
 
         public abstract IEnumerable<IProfile> Profiles { get; protected set; }
+
+        public abstract IEnumerable<IProperty>? Properties { get; protected set; }
 
         public abstract Task<bool> Init(string initStr, CancellationToken cancellationToken);
 

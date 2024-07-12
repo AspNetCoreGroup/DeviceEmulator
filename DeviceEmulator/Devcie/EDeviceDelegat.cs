@@ -1,4 +1,5 @@
-﻿using DeviceEmulator.BaseDevice;
+﻿using CommonTypeDevice.Property;
+using DeviceEmulator.BaseDevice;
 using DeviceEmulator.FastStorage;
 using DeviceEmulator.Interfaces;
 using DeviceEmulator.UseRTC;
@@ -8,7 +9,7 @@ namespace DeviceEmulator.Device
 {
     public class EDeviceDelegat : DeviceBase
     {
-        public override IPropetryCollection? PuppetryCollection { get; protected set; }
+        public override IEnumerable<IProperty>? Properties { get; protected set; } = new List<IProperty>();
         public override IEnumerable<IRegister> Registers { get; protected set; } = new List<IRegister>();
         public override IEnumerable<IProfile> Profiles { get; protected set; } = new List<IProfile>();
 
@@ -16,11 +17,16 @@ namespace DeviceEmulator.Device
         {
 
 
-            PuppetryCollection = new PropetryCollection(new List<IProperty>
+            Properties = new PropetryCollection(new List<IProperty>
             {
                 new Property("SerialNumber", GenerateSerialNumber()),
                 new Property("DeviceType", GenerateDeviceType())
-            });
+            }).Properties;
+            return GenerateProfile(cancellationToken);
+        }
+
+        private Task<bool> GenerateProfile(CancellationToken cancellationToken)
+        {
             RealTimeClock = new FastRTC(new DateTime(2022, 1, 1), DateTime.Now, 60);
 
             IRegister u = new RegisterUseRTC(RealTimeClock, "U", 230, new ScaleAndUnit() { Scale = 0, Unit = 1 }, IncrementTipe.UpDown);
@@ -28,7 +34,7 @@ namespace DeviceEmulator.Device
             IRegister I = new RegisterUseRTC(RealTimeClock, "I", 50, new ScaleAndUnit() { Scale = 0, Unit = 2 }, IncrementTipe.UpDown);
 
             IRegister Ain = new RegisterUseRTC(RealTimeClock, "Ain", 10, new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
-            IRegister Aout = new RegisterUseRTC(RealTimeClock, "Aout", 10, new ScaleAndUnit() { Scale = 0, Unit = 3}, IncrementTipe.Increment);
+            IRegister Aout = new RegisterUseRTC(RealTimeClock, "Aout", 10, new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
             IRegister Rin = new RegisterUseRTC(RealTimeClock, "Rin", 10, new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
             IRegister Rout = new RegisterUseRTC(RealTimeClock, "Rout", 10, new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
 
@@ -63,7 +69,7 @@ namespace DeviceEmulator.Device
             };
 
 
-            List<IncreaseRegister> IncreaseRegister  = new List<IncreaseRegister>();
+            List<IncreaseRegister> IncreaseRegister = new List<IncreaseRegister>();
             foreach (var i in Registers)
             {
                 IFRegister fRegister = (IFRegister)i;
@@ -78,7 +84,7 @@ namespace DeviceEmulator.Device
             }
 
 
-            var IFastRtc  = (IFastRtc)RealTimeClock;
+            var IFastRtc = (IFastRtc)RealTimeClock;
 
             IFastRtc.Init(IncreaseRegister.ToArray(), WriteProfile.ToArray());
 

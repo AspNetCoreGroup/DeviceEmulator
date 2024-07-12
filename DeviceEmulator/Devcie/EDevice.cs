@@ -1,4 +1,5 @@
-﻿using DeviceEmulator.BaseDevice;
+﻿using CommonTypeDevice.Property;
+using DeviceEmulator.BaseDevice;
 using DeviceEmulator.Interfaces;
 using DeviceEmulator.UseRTC;
 using System;
@@ -12,20 +13,21 @@ namespace DeviceEmulator.Device
 {
     public class EDevice : DeviceBase
     {
-        public override IPropetryCollection? PuppetryCollection { get; protected set; }
+        //public override IPropetryCollection? PuppetryCollection { get; protected set; }
         public override IEnumerable<IRegister> Registers { get; protected set; } = new List<IRegister>();
         public override IEnumerable<IProfile> Profiles { get; protected set; } = new List<IProfile>();
+        public override IEnumerable<IProperty>? Properties { get; protected set; } = new List<IProperty>();
 
         public override Task<bool> Init(string initStr, CancellationToken cancellationToken)
         {
 
             RealTimeClock = new RealTimeClockBase(new DateTime(2022, 1, 1), DateTime.Now, 60);
 
-            PuppetryCollection = new PropetryCollection(new List<IProperty>
+            Properties = new PropetryCollection(new List<IProperty>
             {
                 new Property("SerialNumber", GenerateSerialNumber()),
                 new Property("DeviceType", GenerateDeviceType())
-            });
+            }).Properties;
 
             IRegister u = new RegisterUseRTC(RealTimeClock, "U", 230, new ScaleAndUnit() { Scale = 0, Unit = 1 }, IncrementTipe.UpDown);
             IRegister Ain = new RegisterUseRTC(RealTimeClock, "Ain", 10, new ScaleAndUnit() { Scale = 0, Unit = 2 }, IncrementTipe.Increment);

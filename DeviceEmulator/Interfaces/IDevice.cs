@@ -1,25 +1,14 @@
-﻿namespace DeviceEmulator.Interfaces
+﻿using CommonTypeDevice.Property;
+
+namespace DeviceEmulator.Interfaces
 {
-    public interface IDevice
+    public interface IDevice: IPropetryCollection
     {
         Task<bool> Init(string initStr, CancellationToken cancellationToken);
         IRealTimeClock? RealTimeClock { get; }
-        IPropetryCollection? PuppetryCollection { get; }
-
         IEnumerable<IRegister> Registers { get; }
         IEnumerable<IProfile> Profiles { get; }
 
-    }
-
-    public interface IPropetryCollection
-    {
-        IEnumerable<IProperty> Properties { get; }
-    }
-
-    public interface IProperty
-    {
-        string Name { get; }
-        string Value { get; }
     }
 
     public interface IRealTimeClock : IRtc

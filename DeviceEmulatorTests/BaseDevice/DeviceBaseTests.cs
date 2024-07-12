@@ -25,7 +25,7 @@ namespace DeviceEmulator.Tests
             // Assert
             Xunit.Assert.True(result);
             Xunit.Assert.NotNull(deviceBase.RealTimeClock);
-            Xunit.Assert.NotNull(deviceBase.PuppetryCollection);
+           // Xunit.Assert.NotNull(deviceBase.PuppetryCollection);
             Xunit.Assert.NotNull(deviceBase.Registers);
             Xunit.Assert.Single(deviceBase.Registers);
         }
