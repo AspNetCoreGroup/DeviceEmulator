@@ -1,13 +1,8 @@
-﻿using CommonTypeDevice.Property;
+﻿using CommonTypeDevice.Event;
+using CommonTypeDevice.Property;
 using DeviceEmulator.BaseDevice;
 using DeviceEmulator.Interfaces;
 using DeviceEmulator.UseRTC;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace DeviceEmulator.Device
 {
@@ -17,6 +12,7 @@ namespace DeviceEmulator.Device
         public override IEnumerable<IRegister> Registers { get; protected set; } = new List<IRegister>();
         public override IEnumerable<IProfile> Profiles { get; protected set; } = new List<IProfile>();
         public override IEnumerable<IProperty>? Properties { get; protected set; } = new List<IProperty>();
+        public override IEnumerable<IDeviceEvent> DeviceEvents { get; protected set ; } = new List<IDeviceEvent>();
 
         public override Task<bool> Init(string initStr, CancellationToken cancellationToken)
         {
@@ -25,8 +21,8 @@ namespace DeviceEmulator.Device
 
             Properties = new PropetryCollection(new List<IProperty>
             {
-                new Property("SerialNumber", GenerateSerialNumber()),
-                new Property("DeviceType", GenerateDeviceType())
+                new DeviceProperty("SerialNumber", GenerateSerialNumber()),
+                new DeviceProperty("DeviceType", GenerateDeviceType())
             }).Properties;
 
             IRegister u = new RegisterUseRTC(RealTimeClock, "U", 230, new ScaleAndUnit() { Scale = 0, Unit = 1 }, IncrementTipe.UpDown);
@@ -49,6 +45,13 @@ namespace DeviceEmulator.Device
             {
                 new ProfileUseRTC(RealTimeClock,Registers3,"I", 900 )
             };
+
+
+            IDeviceEvent deviceEvent = new DeviceEvent()
+            {
+                EventParameters = new() { new() { Key = 1 } }
+            };
+
 
             foreach (IRegister i in Registers)
             {

@@ -1,6 +1,6 @@
 ﻿@DeviceEmulatorWeb_HostAddress = http://localhost:5183
 
-GET {{DeviceEmulatorWeb_HostAddress}}/api/newdevice/{sn}
+GET {{DeviceEmulatorWeb_HostAddress}}/api/newdevice/{13}
 
 ###
 

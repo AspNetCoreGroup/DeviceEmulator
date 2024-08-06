@@ -31,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Common\CommonType\CommonTypeDevice.csproj" />
     <ProjectReference Include="..\DeviceEmulator\DeviceEmulator.csproj" />
   </ItemGroup>
 

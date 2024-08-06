@@ -1,10 +1,4 @@
 ﻿using DeviceEmulator.BaseDevice;
-using DeviceEmulator.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static DeviceEmulator.FastStorage.FastRTC;
 
 namespace DeviceEmulator.FastStorage
@@ -12,7 +6,7 @@ namespace DeviceEmulator.FastStorage
 
     public interface IFastRtc
     {
-        void Init(IncreaseRegister[] increaseRegisters, WriteProfile[] vriteProfiles);
+        void Init(IncreaseRegister[] increaseRegisters, WriteProfile[] vriteProfiles, DoEvent[] eventDo);
     }
     public class FastRTC : RealTimeClockBase , IFastRtc
     {
@@ -21,17 +15,21 @@ namespace DeviceEmulator.FastStorage
 
         }
 
-        public void Init(IncreaseRegister[] increaseRegisters, WriteProfile[] vriteProfiles)
+        public void Init(IncreaseRegister[] increaseRegisters, WriteProfile[] writeProfiles, DoEvent[] eventDo)
         {
             this.increaseRegisters = increaseRegisters;
-            this.vriteProfiles = vriteProfiles;
+            this.writeProfiles = writeProfiles;
+            this.eventDo = eventDo;
         }
 
         public IncreaseRegister[ ] increaseRegisters;
         public delegate void IncreaseRegister();
 
-        public WriteProfile[] vriteProfiles ;
+        public WriteProfile[] writeProfiles ;
         public delegate void WriteProfile();
+
+        public DoEvent[] eventDo;
+        public delegate Task DoEvent();
 
         override protected async Task Run(CancellationToken cancellationToken)
         {
@@ -40,16 +38,33 @@ namespace DeviceEmulator.FastStorage
                 I += Step;
                 if (((DateTimeOffset)EndTimeClock).ToUnixTimeSeconds() < I)
                 {
-                    return;
+                   break;
                 }
                 foreach (var register in increaseRegisters) {
                     register();
                 }
-                foreach (var profile in vriteProfiles)
+                foreach (var profile in writeProfiles)
                 {
                     profile();
                 }
-
+               
+            }
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                await Task.Delay(Step);
+                I += Step;
+                foreach (var profile in writeProfiles)
+                {
+                    profile();
+                }
+                foreach (var register in increaseRegisters)
+                {
+                    register();
+                }
+                foreach (var thisevent in eventDo)
+                {
+                    thisevent();
+                }
             }
             return;
         }

@@ -1,5 +1,4 @@
-﻿
-using CommonTypeDevice.Property;
+﻿using CommonTypeDevice.Property;
 using DeviceEmulator.Devcie;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
@@ -12,12 +11,7 @@ namespace DeviceEmulatorWeb.Controllers
     [ApiController]
     public class NewDevice : ControllerBase
     {
-        [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
+      
         [HttpGet("{IPropetryCollection}")]
         public async Task<bool> CreateNewDevice(PropetryCollection sn)
         {

@@ -1,4 +1,5 @@
-﻿using CommonTypeDevice.Property;
+﻿using CommonTypeDevice.Event;
+using CommonTypeDevice.Property;
 using DeviceEmulator.Device;
 using DeviceEmulator.Interfaces;
 
@@ -17,6 +18,8 @@ namespace DeviceEmulator.BaseDevice
         public abstract IEnumerable<IProfile> Profiles { get; protected set; }
 
         public abstract IEnumerable<IProperty>? Properties { get; protected set; }
+
+        public abstract IEnumerable<IDeviceEvent> DeviceEvents { get; protected set; }
 
         public abstract Task<bool> Init(string initStr, CancellationToken cancellationToken);
 

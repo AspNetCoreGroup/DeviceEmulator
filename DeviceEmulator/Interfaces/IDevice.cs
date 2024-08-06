@@ -1,4 +1,6 @@
-﻿using CommonTypeDevice.Property;
+﻿using CommonTypeDevice.Event;
+using CommonTypeDevice.Measurument;
+using CommonTypeDevice.Property;
 
 namespace DeviceEmulator.Interfaces
 {
@@ -8,6 +10,8 @@ namespace DeviceEmulator.Interfaces
         IRealTimeClock? RealTimeClock { get; }
         IEnumerable<IRegister> Registers { get; }
         IEnumerable<IProfile> Profiles { get; }
+
+        IEnumerable<IDeviceEvent> DeviceEvents { get; }
 
     }
 
@@ -40,6 +44,7 @@ namespace DeviceEmulator.Interfaces
     public interface IValue
     {
         string GetValue();
+        Measurement GetMeasurement();
     }
 
     public interface IFRegister : IRegister
@@ -65,6 +70,11 @@ namespace DeviceEmulator.Interfaces
     public interface IFProfile: IProfile
     {
         void WriteProfile();
+    }
+
+    public interface IFEvent : IDeviceEvent
+    {
+        Task DoEvent();
     }
 
     public interface IProfile

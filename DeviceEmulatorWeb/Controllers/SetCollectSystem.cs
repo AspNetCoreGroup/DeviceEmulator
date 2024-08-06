@@ -1,7 +1,4 @@
-﻿using CommonTypeDevice.Property;
-using DeviceEmulator.Devcie;
-using DeviceEmulatorWeb.Data;
-using Microsoft.AspNetCore.Http;
+﻿using DeviceEmulatorWeb.Data;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DeviceEmulatorWeb.Controllers
