@@ -1,16 +1,26 @@
-﻿using DeviceEmulator.Interfaces;
+﻿using CommonTypeDevice.Measurument;
+using DeviceEmulator.Interfaces;
+using System.Collections.Generic;
 
 namespace DeviceEmulator.Data
 {
     public class DataRegisterValue : IValue
     {
         private readonly DateTime _timestamp;
-        private readonly uint _value;
+        private readonly double _value;
 
-        public DataRegisterValue(DateTime timestamp, uint value)
+        private readonly int _MeasurumentId;
+        private readonly uint _unit;
+
+        public DataRegisterValue(DateTime timestamp, double value, int name, uint unit)
         {
             _timestamp = timestamp;
             _value = value;
+        }
+
+        public Measurement GetMeasurement()
+        {
+            return new() { DateTime = _timestamp, Value = _value, MeasurumentId = _MeasurumentId, Unit = _unit };
         }
 
         public string GetValue()

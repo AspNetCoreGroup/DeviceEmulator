@@ -1,6 +1,7 @@
 ﻿using DeviceEmulator.Data;
 using DeviceEmulator.Interfaces;
 using System.Diagnostics;
+using System.Xml.Linq;
 
 namespace DeviceEmulator.UseRTC
 {
@@ -75,10 +76,10 @@ namespace DeviceEmulator.UseRTC
             foreach (IRegister value in Registers)
             {
 
-                _values.Add(new DataRegisterValue(timestamp, value.Value));
+                _values.Add(new DataRegisterValue(timestamp, value.Value, value.MeasurumentId, value.ScaleAndUnit.Unit));
                 if (i == 0)
                 {
-                    Debug.WriteLine(value.Name + ": " + _values.Last().GetValue());
+                    Debug.WriteLine(value.MeasurumentId + ": " + _values.Last().GetValue());
                     i = 1000;
                 }
                 else i--;

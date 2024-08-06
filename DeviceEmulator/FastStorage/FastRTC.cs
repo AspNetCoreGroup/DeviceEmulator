@@ -51,7 +51,7 @@ namespace DeviceEmulator.FastStorage
             }
             while (!cancellationToken.IsCancellationRequested)
             {
-                await Task.Delay(Step);
+                await Task.Delay(Step*100);
                 I += Step;
                 foreach (var profile in writeProfiles)
                 {

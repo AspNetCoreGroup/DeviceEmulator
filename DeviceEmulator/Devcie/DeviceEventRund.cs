@@ -1,12 +1,11 @@
-﻿using CommonTypeDevice.Event;
-using DeviceEmulator.Interfaces;
-using System.Net.Sockets;
-using System.Net;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
-using CommonTypeDevice;
-using CommonTypeDevice.Property;
+﻿using CommonTypeDevice;
+using CommonTypeDevice.Event;
 using CommonTypeDevice.Measurument;
+using CommonTypeDevice.Property;
+using DeviceEmulator.Interfaces;
+using System.Diagnostics;
+using System.Net;
+using System.Net.Sockets;
 
 namespace DeviceEmulator.Device
 {
@@ -30,7 +29,7 @@ namespace DeviceEmulator.Device
                 {
                     DeviceEvents = new() { new() { DateTime = this.DateTime, EventParameters = this.EventParameters } },
                     Measurements = await GetAllValuesFromProfiles(profiles),
-                    Properties  = await GetAllProppertys(properties),
+                    Properties = await GetAllProppertys(properties),
 
                 };
                 Send(data);
@@ -39,8 +38,8 @@ namespace DeviceEmulator.Device
 
         private async Task<List<DeviceProperty>> GetAllProppertys(IEnumerable<IProperty> properties)
         {
-            var allProperty = new List<DeviceProperty>();
-            foreach (var properti in properties)
+            List<DeviceProperty> allProperty = new List<DeviceProperty>();
+            foreach (IProperty properti in properties)
             {
                 allProperty.Add(new(properti.Name, properti.Value));
             }
@@ -49,15 +48,15 @@ namespace DeviceEmulator.Device
 
         public async Task<List<Measurement>> GetAllValuesFromProfiles(IEnumerable<IProfile> profiles)
         {
-            var allValues = new List<Measurement>();
+            List<Measurement> allValues = new List<Measurement>();
 
-            foreach (var profile in profiles)
+            foreach (IProfile profile in profiles)
             {
-                var values = await profile.GetValues();
+                IEnumerable<IValue>? values = await profile.GetValues();
                 if (values != null)
                 {
-                    foreach (var value in values)
-                    allValues.Add(value.GetMeasurement());
+                    foreach (IValue value in values)
+                        allValues.Add(value.GetMeasurement());
                 }
             }
 
@@ -122,7 +121,7 @@ namespace DeviceEmulator.Device
         public List<EventItem> EventParameters { get; set; }
         public DateTime DateTime { get; set; }
 
-        public virtual async  Task DoEvent()
+        public virtual async Task DoEvent()
         {
 
         }
@@ -133,14 +132,14 @@ namespace DeviceEmulator.Device
         /// <returns></returns>
         public async Task<IDeviceEvent?> Get()
         {
-            var dictionary = EventDictionary.dictionary;
+            Dictionary<int, string> dictionary = EventDictionary.dictionary;
             await Task.Delay(15000); // Simulate 15 seconds timeout
 
             Random random = new Random();
             if (random.Next(100) < Chance) // If the random number is within the chance range
             {
                 // Simulate filling EventParameters
-                var value = "";
+                string? value = "";
                 dictionary.TryGetValue(Key, out value);
                 EventParameters = new List<EventItem>
                 {
@@ -159,6 +158,6 @@ namespace DeviceEmulator.Device
     public class ServerDataStorageConfig
     {
         public string ipAddres { set; get; } = "127.0.0.1";
-        public string port { set; get; } = "1944";
+        public string port { set; get; } = "5000";
     }
 }

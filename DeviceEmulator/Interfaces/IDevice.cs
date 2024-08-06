@@ -54,8 +54,8 @@ namespace DeviceEmulator.Interfaces
 
     public interface IRegister : IValue
     {
-        string Name { get; set; }
-        uint Value { get; set; }
+        int MeasurumentId { get; set; }
+        double Value { get; set; }
         IScaleAndUnit ScaleAndUnit { get; }
         Task StartWatch(CancellationToken token);
     }

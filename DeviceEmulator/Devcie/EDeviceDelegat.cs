@@ -34,14 +34,14 @@ namespace DeviceEmulator.Device
         {
             RealTimeClock = new FastRTC(new DateTime(2022, 1, 1), DateTime.Now, 60);
 
-            IRegister u = new RegisterUseRTC(RealTimeClock, "U", 230, new ScaleAndUnit() { Scale = 0, Unit = 1 }, IncrementTipe.UpDown);
+            //IRegister u = new RegisterUseRTC(RealTimeClock, "U", 230, new ScaleAndUnit() { Scale = 0, Unit = 1 }, IncrementTipe.UpDown);
 
-            IRegister I = new RegisterUseRTC(RealTimeClock, "I", 50, new ScaleAndUnit() { Scale = 0, Unit = 2 }, IncrementTipe.UpDown);
+            //IRegister I = new RegisterUseRTC(RealTimeClock, "I", 50, new ScaleAndUnit() { Scale = 0, Unit = 2 }, IncrementTipe.UpDown);
 
-            IRegister Ain = new RegisterUseRTC(RealTimeClock, "Ain", 10, new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
-            IRegister Aout = new RegisterUseRTC(RealTimeClock, "Aout", 10, new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
-            IRegister Rin = new RegisterUseRTC(RealTimeClock, "Rin", 10, new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
-            IRegister Rout = new RegisterUseRTC(RealTimeClock, "Rout", 10, new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
+            IRegister Ain = new RegisterUseRTC(RealTimeClock, 1, 10, new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
+            IRegister Aout = new RegisterUseRTC(RealTimeClock, 2, 10, new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
+            IRegister Rin = new RegisterUseRTC(RealTimeClock, 3, 10, new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
+            IRegister Rout = new RegisterUseRTC(RealTimeClock, 4, 10, new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
 
 
 
@@ -50,18 +50,18 @@ namespace DeviceEmulator.Device
 
             Registers = new List<IRegister>()
             {
-                u,
-                I,
+                //u,
+                //I,
                 Ain,
                 Aout,
                 Rin,
                 Rout
             };
-            List<IRegister> RegistersCurrent = new List<IRegister>()
-            {
-                u,
-                I,
-            };
+            //List<IRegister> RegistersCurrent = new List<IRegister>()
+            //{
+            //    u,
+            //    I,
+            //};
             List<IRegister> RegistersHour = new List<IRegister>()
             {
                 Ain,
@@ -71,7 +71,7 @@ namespace DeviceEmulator.Device
             };
             Profiles = new List<IProfile>()
             {
-                new ProfileUseRTC(RealTimeClock,RegistersCurrent,"Current", 900 ),
+                //new ProfileUseRTC(RealTimeClock,RegistersCurrent,"Current", 900 ),
                 new ProfileUseRTC(RealTimeClock,RegistersHour,"Hour", 3600 )
             };
 

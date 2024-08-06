@@ -1,4 +1,5 @@
-﻿using DeviceEmulator.Interfaces;
+﻿using CommonTypeDevice.Measurument;
+using DeviceEmulator.Interfaces;
 using System.Diagnostics;
 using System.Threading;
 
@@ -9,18 +10,18 @@ namespace DeviceEmulator.BaseDevice
         IncrementTipe _incrementType;
         IDeviceRtc Rtc { get; }
         uint _startValue;
-        public RegisterUseRTC(IDeviceRtc rtc, string sogialName, uint startValue, IScaleAndUnit scaleAndUnit, IncrementTipe incrementTipe)
+        public RegisterUseRTC(IDeviceRtc rtc, int MeasurumentId, uint startValue, IScaleAndUnit scaleAndUnit, IncrementTipe incrementTipe)
         {
             Rtc = rtc;
-            Name = sogialName;
+            this.MeasurumentId = MeasurumentId;
             Value = startValue;
             ScaleAndUnit = scaleAndUnit;
             _startValue = startValue;
             _incrementType = incrementTipe;
         }
 
-        public string Name { get; set; }
-        public uint Value { get; set; }
+        public int MeasurumentId { get; set; }
+        public double Value { get; set; }
         public IScaleAndUnit ScaleAndUnit { get; private set; }
 
         Task? WatchTask;
@@ -94,6 +95,11 @@ namespace DeviceEmulator.BaseDevice
         }
 
         void IFRegister.IncreaseValue() => IncreaseValue();
+
+        public Measurement GetMeasurement()
+        {
+            return new() {  Value = Value, MeasurumentId = MeasurumentId, Unit = ScaleAndUnit.Unit };
+        }
     }
 
     public enum IncrementTipe

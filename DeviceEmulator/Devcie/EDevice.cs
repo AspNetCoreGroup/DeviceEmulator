@@ -25,19 +25,20 @@ namespace DeviceEmulator.Device
                 new DeviceProperty("DeviceType", GenerateDeviceType())
             }).Properties;
 
-            IRegister u = new RegisterUseRTC(RealTimeClock, "U", 230, new ScaleAndUnit() { Scale = 0, Unit = 1 }, IncrementTipe.UpDown);
-            IRegister Ain = new RegisterUseRTC(RealTimeClock, "Ain", 10, new ScaleAndUnit() { Scale = 0, Unit = 2 }, IncrementTipe.Increment);
-            IRegister Qin = new RegisterUseRTC(RealTimeClock, "Qin", 10, new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
+            IRegister Ain = new RegisterUseRTC(RealTimeClock, 1, 230, new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
+            IRegister Aout = new RegisterUseRTC(RealTimeClock, 2, 10, new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
+            IRegister Qin = new RegisterUseRTC(RealTimeClock, 3, 10, new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
+            IRegister Qout= new RegisterUseRTC(RealTimeClock, 4, 10, new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
 
             Registers = new List<IRegister>()
             {
-                u,
-                Ain
+                Ain,
+                Aout,Qin,Qout
             };
             List<IRegister> Registers3 = new List<IRegister>()
             {
-                u,
-                Ain
+                Ain,
+                Aout,Qin,Qout
             };
 
 

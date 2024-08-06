@@ -19,8 +19,7 @@ namespace DeviceEmulator.Devcie
     {
         public override async Task<bool> Init(string initStr, CancellationToken cancellationToken)
         {
-            IPropetryCollection? propetryCollection =  JsonSerializer.Deserialize<IPropetryCollection>(initStr);
-            Properties = propetryCollection?.Properties;
+
             return await base.Init(initStr, cancellationToken);
         }
         

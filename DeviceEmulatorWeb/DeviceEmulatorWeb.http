@@ -1,6 +1,10 @@
 ﻿@DeviceEmulatorWeb_HostAddress = http://localhost:5183
 
-GET {{DeviceEmulatorWeb_HostAddress}}/api/newdevice/{13}
+GET {{DeviceEmulatorWeb_HostAddress}}/api/newdevice/{{
+  "properties": [
+   {       "name": "SN",       "value": "232323"     }
+  ]
+}
 
 ###
 
