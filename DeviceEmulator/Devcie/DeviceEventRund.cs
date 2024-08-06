@@ -73,7 +73,7 @@ namespace DeviceEmulator.Device
                 string _choosenDirectory = AppDomain.CurrentDomain.BaseDirectory;
                 ServerDataStorageConfig? server_config = new();
 
-                int port = 44140;
+                int port = 5247;
                 int.TryParse(server_config?.port, out port); // Порт, на котором будет слушать сервер
 
                 string host = Dns.GetHostName();
