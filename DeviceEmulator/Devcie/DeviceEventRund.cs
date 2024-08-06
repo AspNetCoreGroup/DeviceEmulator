@@ -32,6 +32,7 @@ namespace DeviceEmulator.Device
                     Properties = await GetAllProppertys(properties),
 
                 };
+                Debug.WriteLine("send");
                 Send(data);
             }
         }
@@ -98,8 +99,6 @@ namespace DeviceEmulator.Device
                 {
                     Debug.WriteLine("Ошибка при подключении или обмене данными с сервером: " + ex.Message);
                     await Task.Delay(2000); // Ожидание 2 секунд перед отправкой следующего запроса
-
-                    Debug.WriteLine($"Для закрытия нажмите любую клавишу");
                 }
             }
         }
