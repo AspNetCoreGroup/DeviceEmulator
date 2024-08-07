@@ -14,8 +14,8 @@ namespace DeviceEmulator.Device
 
                 byte[] requestData;
                 
-                    requestData = Encoding.UTF8.GetBytes(requestJson);
-                    await stream.WriteAsync(requestData, 0, requestData.Length);
+                requestData = Encoding.UTF8.GetBytes(requestJson);
+                await stream.WriteAsync(requestData, 0, requestData.Length);
                 
                 Debug.WriteLine($"Отправил: " + requestJson);
             }

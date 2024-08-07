@@ -6,6 +6,7 @@ using DeviceEmulator.Interfaces;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.Json;
 
 namespace DeviceEmulator.Device
 {
@@ -71,26 +72,44 @@ namespace DeviceEmulator.Device
             if (deviceData != null)
             {
                 string _choosenDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                ServerDataStorageConfig? server_config = new();
+                //ServerDataStorageConfig? server_config = new();
 
                 int port = 5247;
-                int.TryParse(server_config?.port, out port); // Порт, на котором будет слушать сервер
+                int.TryParse(ServerDataStorageConfig.port, out port); // Порт, на котором будет слушать сервер
 
                 string host = Dns.GetHostName();
                 IPAddress? ipAddress;
-                if (!IPAddress.TryParse(server_config?.ipAddres, out ipAddress))
+                if (!IPAddress.TryParse(ServerDataStorageConfig.ipAddres, out ipAddress))
                 {
                     ipAddress = Dns.GetHostAddresses(host).Last<IPAddress>(f => f.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
                 }
                 try
                 {
-                    using (TcpClient client = new TcpClient())
-                    {
-
-                        await client.ConnectAsync(ipAddress, port);
-                        using (NetworkStream stream = client.GetStream())
+                    //using (TcpClient client = new TcpClient())
+                    //{
+                        using (HttpClient client2 = new HttpClient())
                         {
-                            await Writer<DeviceData>.Write(stream, deviceData);
+                            //await client.ConnectAsync(ipAddress, port);
+                            client2.BaseAddress = new Uri($"http://{ServerDataStorageConfig.ipAddres}:{ServerDataStorageConfig.port}");
+                        string propertiesJson = JsonSerializer.Serialize(deviceData.Properties);
+                        string deviceEventsJson = JsonSerializer.Serialize(deviceData.DeviceEvents);
+                        string measurementsJson = JsonSerializer.Serialize(deviceData.Measurements);
+
+                        // Create the content for the POST request
+                        var content = new FormUrlEncodedContent(new[]
+                                                {
+                            new KeyValuePair<string, string>("Properties", propertiesJson),
+                            new KeyValuePair<string, string>("DeviceEvents", deviceEventsJson),
+                            new KeyValuePair<string, string>("Measurements", measurementsJson)
+                        });
+                        var result = await client2.PostAsync("/DataFromDevice", content);
+                        if (result.IsSuccessStatusCode)
+                        {
+                            Debug.WriteLine("УСПЕХ ОТПРАВКИ");
+                        }
+                        else
+                        {
+                            Debug.WriteLine("Ошибка");
                         }
                     }
 
@@ -154,9 +173,9 @@ namespace DeviceEmulator.Device
         }
     }
 
-    public class ServerDataStorageConfig
+    public static class ServerDataStorageConfig
     {
-        public string ipAddres { set; get; } = "127.0.0.1";
-        public string port { set; get; } = "5000";
+        public static string ipAddres { set; get; } = "127.0.0.1";
+        public static string port { set; get; } = "5000";
     }
 }

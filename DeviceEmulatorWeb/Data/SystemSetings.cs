@@ -2,9 +2,9 @@
 
 namespace DeviceEmulatorWeb.Data
 {
-    public class SystemSetings
+    public  class SystemSetings
     {
-        public string IpPortCollectSystem { set; get; } = "localhost:5456";
+        public  string IpPortCollectSystem { set; get; } = "localhost:5456";
     }
     public class DeviceStorege
     {

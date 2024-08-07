@@ -1,5 +1,7 @@
-﻿using DeviceEmulatorWeb.Data;
+﻿using DeviceEmulator.Device;
+using DeviceEmulatorWeb.Data;
 using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace DeviceEmulatorWeb.Controllers
 {
@@ -18,6 +20,17 @@ namespace DeviceEmulatorWeb.Controllers
         public async Task<bool> CreateNewDevice(string ipPort)
         {
             SystemSetings.IpPortCollectSystem = ipPort;
+
+
+
+            IPAddress? iPAddress;
+            int iPort;
+            IPAddress.TryParse(ipPort, out iPAddress);
+            var portstr = ipPort.Split(':').ToList().Last();
+            int.TryParse(portstr, out iPort);
+
+            ServerDataStorageConfig.port = iPort.ToString();
+            ServerDataStorageConfig.ipAddres = iPAddress.ToString();
             return true;
         }
     }
