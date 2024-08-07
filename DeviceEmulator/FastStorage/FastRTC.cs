@@ -47,11 +47,10 @@ namespace DeviceEmulator.FastStorage
                 {
                     profile();
                 }
-               
+                await Task.Delay(1);
             }
             while (!cancellationToken.IsCancellationRequested)
             {
-                await Task.Delay(Step*100);
                 I += Step;
                 foreach (var profile in writeProfiles)
                 {
@@ -65,6 +64,7 @@ namespace DeviceEmulator.FastStorage
                 {
                     thisevent();
                 }
+                await Task.Delay(Step*1000);
             }
             return;
         }
