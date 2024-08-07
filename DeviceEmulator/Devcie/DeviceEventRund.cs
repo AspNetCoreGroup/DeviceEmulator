@@ -72,16 +72,6 @@ namespace DeviceEmulator.Device
             {
                 string _choosenDirectory = AppDomain.CurrentDomain.BaseDirectory;
                 //ServerDataStorageConfig? server_config = new();
-
-                int port = 5247;
-                int.TryParse(ServerDataStorageConfig.port, out port); // Порт, на котором будет слушать сервер
-
-                string host = Dns.GetHostName();
-                IPAddress? ipAddress;
-                if (!IPAddress.TryParse(ServerDataStorageConfig.ipAddres, out ipAddress))
-                {
-                    ipAddress = Dns.GetHostAddresses(host).Last<IPAddress>(f => f.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
-                }
                 try
                 {
                     //using (TcpClient client = new TcpClient())
@@ -101,6 +91,7 @@ namespace DeviceEmulator.Device
                             new KeyValuePair<string, string>("DeviceEvents", deviceEventsJson),
                             new KeyValuePair<string, string>("Measurements", measurementsJson)
                         });
+                        
                         HttpResponseMessage result = await client2.PostAsync("/DataFromDevice", content);
                         if (result.IsSuccessStatusCode)
                         {
