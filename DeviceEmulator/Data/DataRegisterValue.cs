@@ -16,6 +16,8 @@ namespace DeviceEmulator.Data
         {
             _timestamp = timestamp;
             _value = value;
+            _MeasurumentId = name;
+            _unit = unit;
         }
 
         public Measurement GetMeasurement()
