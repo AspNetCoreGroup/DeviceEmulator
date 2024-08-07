@@ -5,7 +5,6 @@ using CommonTypeDevice.Property;
 using DeviceEmulator.Interfaces;
 using System.Diagnostics;
 using System.Net;
-using System.Net.Sockets;
 using System.Text.Json;
 
 namespace DeviceEmulator.Device
@@ -87,22 +86,22 @@ namespace DeviceEmulator.Device
                 {
                     //using (TcpClient client = new TcpClient())
                     //{
-                        using (HttpClient client2 = new HttpClient())
-                        {
-                            //await client.ConnectAsync(ipAddress, port);
-                            client2.BaseAddress = new Uri($"http://{ServerDataStorageConfig.ipAddres}:{ServerDataStorageConfig.port}");
+                    using (HttpClient client2 = new HttpClient())
+                    {
+                        //await client.ConnectAsync(ipAddress, port);
+                        client2.BaseAddress = new Uri($"http://{ServerDataStorageConfig.ipAddres}:{ServerDataStorageConfig.port}");
                         string propertiesJson = JsonSerializer.Serialize(deviceData.Properties);
                         string deviceEventsJson = JsonSerializer.Serialize(deviceData.DeviceEvents);
                         string measurementsJson = JsonSerializer.Serialize(deviceData.Measurements);
 
                         // Create the content for the POST request
-                        var content = new FormUrlEncodedContent(new[]
+                        FormUrlEncodedContent content = new FormUrlEncodedContent(new[]
                                                 {
                             new KeyValuePair<string, string>("Properties", propertiesJson),
                             new KeyValuePair<string, string>("DeviceEvents", deviceEventsJson),
                             new KeyValuePair<string, string>("Measurements", measurementsJson)
                         });
-                        var result = await client2.PostAsync("/DataFromDevice", content);
+                        HttpResponseMessage result = await client2.PostAsync("/DataFromDevice", content);
                         if (result.IsSuccessStatusCode)
                         {
                             Debug.WriteLine("УСПЕХ ОТПРАВКИ");
