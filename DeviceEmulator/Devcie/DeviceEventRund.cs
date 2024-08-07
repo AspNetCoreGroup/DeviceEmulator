@@ -5,6 +5,8 @@ using CommonTypeDevice.Property;
 using DeviceEmulator.Interfaces;
 using System.Diagnostics;
 using System.Net;
+using System.Net.Http.Json;
+using System.Text;
 using System.Text.Json;
 
 namespace DeviceEmulator.Device
@@ -85,14 +87,18 @@ namespace DeviceEmulator.Device
                         string measurementsJson = JsonSerializer.Serialize(deviceData.Measurements);
 
                         // Create the content for the POST request
-                        FormUrlEncodedContent content = new FormUrlEncodedContent(new[]
-                                                {
-                            new KeyValuePair<string, string>("Properties", propertiesJson),
-                            new KeyValuePair<string, string>("DeviceEvents", deviceEventsJson),
-                            new KeyValuePair<string, string>("Measurements", measurementsJson)
-                        });
-                        
-                        HttpResponseMessage result = await client2.PostAsync("/DataFromDevice", content);
+                        //FormUrlEncodedContent content = new FormUrlEncodedContent(new[]
+                        //                        {
+                        //    new KeyValuePair<string, string>("Properties", propertiesJson),
+                        //    new KeyValuePair<string, string>("DeviceEvents", deviceEventsJson),
+                        //    new KeyValuePair<string, string>("Measurements", measurementsJson)
+                        //});
+                        string strD = JsonSerializer.Serialize(deviceData);
+                        JsonContent content = JsonContent.Create(deviceData);
+                        var contentstr = new StringContent(strD, Encoding.UTF8, "application/json");
+
+                        var str = content.ToString();
+                        HttpResponseMessage result = await client2.PostAsync("/DataFromDevice", contentstr);
                         if (result.IsSuccessStatusCode)
                         {
                             Debug.WriteLine("УСПЕХ ОТПРАВКИ");
@@ -166,6 +172,6 @@ namespace DeviceEmulator.Device
     public static class ServerDataStorageConfig
     {
         public static string ipAddres { set; get; } = "127.0.0.1";
-        public static string port { set; get; } = "5000";
+        public static string port { set; get; } = "5247";
     }
 }

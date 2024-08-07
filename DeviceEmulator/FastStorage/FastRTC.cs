@@ -47,7 +47,7 @@ namespace DeviceEmulator.FastStorage
                 {
                     profile();
                 }
-                await Task.Delay(1);
+                //await Task.Delay(1);
             }
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -64,7 +64,7 @@ namespace DeviceEmulator.FastStorage
                 {
                     thisevent();
                 }
-                await Task.Delay(Step*1000);
+                await Task.Delay(Step*100);
             }
             return;
         }

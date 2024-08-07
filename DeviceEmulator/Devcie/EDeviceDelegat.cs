@@ -24,7 +24,7 @@ namespace DeviceEmulator.Device
 
             Properties = new PropetryCollection(new List<IProperty>
             {
-                new DeviceProperty("SerialNumber", GenerateSerialNumber()),
+                new DeviceProperty("SN", GenerateSerialNumber()),
                 new DeviceProperty("DeviceType", GenerateDeviceType())
             }).Properties;
             return GenerateProfile(cancellationToken);

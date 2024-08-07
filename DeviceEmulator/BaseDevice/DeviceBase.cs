@@ -31,7 +31,7 @@ namespace DeviceEmulator.BaseDevice
 
         protected virtual string GenerateDeviceType()
         {
-            string[] deviceTypes = { "TypeA1", "TypeA2", "TypeA3" };
+            string[] deviceTypes = { "1", "2", "3","4" ,"5","6","7" };
             Random random = new Random();
             return deviceTypes[random.Next(deviceTypes.Length)];
         }
