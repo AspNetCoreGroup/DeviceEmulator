@@ -2,6 +2,7 @@
 using DeviceEmulator.Devcie;
 using DeviceEmulatorWeb.Data;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 namespace DeviceEmulatorWeb.Controllers
 {
     [Route("api/[controller]")]
@@ -33,20 +34,20 @@ namespace DeviceEmulatorWeb.Controllers
 
     [Route("api/[controller]")]
     [ApiController]
-    public class New100Device : ControllerBase
+    public class New1000Device : ControllerBase
     {
         DeviceStorege Storege { get; }
 
-        public New100Device(DeviceStorege storege)
+        public New1000Device(DeviceStorege storege)
         {
             Storege = storege;
         }
 
         [HttpGet]
-        public async Task<bool> CreateNew100Device()
+        public async Task<bool> CreateNew1000Device()
         {
             using (CancellationTokenSource ct = new CancellationTokenSource())
-                for (int i = 0; i < 100; i++)
+                for (int i = 0; i < 1000; i++)
                 {
                     EDeviceForeWeb device = new EDeviceForeWeb();
                     Storege.ForeWebs.Add(device);
@@ -56,7 +57,8 @@ namespace DeviceEmulatorWeb.Controllers
                         sn = DeviceBase.GenerateSerialNumber();
                     }
                     Storege.ListSn.Add(sn);
-                    await device.Init(sn, ct.Token);
+                    Debug.WriteLine("Start " + i + " " + sn);
+                    device.Init(sn, ct.Token);
                 }
             return true;
         }

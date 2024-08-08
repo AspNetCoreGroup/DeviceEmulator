@@ -90,12 +90,12 @@ namespace DeviceEmulator.UseRTC
             {
 
                 _values.Add(new DataRegisterValue(timestamp, value.Value, value.MeasurumentId, value.ScaleAndUnit.Unit));
-                if (i == 0)
-                {
-                    Debug.WriteLine(value.MeasurumentId + ": " + _values.Last().GetValue());
-                    i = 1000;
-                }
-                else i--;
+                //if (i == 0)
+                //{
+                //    Debug.WriteLine(value.MeasurumentId + ": " + _values.Last().GetValue());
+                //    i = 1000;
+                //}
+                //else i--;
             }
         }
 
