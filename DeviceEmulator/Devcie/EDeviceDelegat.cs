@@ -194,7 +194,7 @@ namespace DeviceEmulator.Device
                 Properties = _properties,
 
             };
-            DeviceDataStorage.SaveDeviceDataAsync(data);
+            await DeviceDataStorage.SaveDeviceDataAsync(data);
 
             return Task.FromResult(RealTimeClock?.StartRtc(cancellationToken) ?? false).Result;
         }

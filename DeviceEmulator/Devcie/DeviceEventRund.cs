@@ -4,8 +4,6 @@ using CommonTypeDevice.Measurument;
 using CommonTypeDevice.Property;
 using DeviceEmulator.Interfaces;
 using System.Diagnostics;
-using System.IO;
-using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -119,9 +117,9 @@ namespace DeviceEmulator.Device
 
                         string strD = JsonSerializer.Serialize(deviceData);
                         JsonContent content = JsonContent.Create(deviceData);
-                        var contentstr = new StringContent(strD, Encoding.UTF8, "application/json");
+                        StringContent contentstr = new StringContent(strD, Encoding.UTF8, "application/json");
 
-                        var str = content.ToString();
+                        string? str = content.ToString();
                         HttpResponseMessage result = await client2.PostAsync("/DataFromDevice", contentstr);
                         if (result.IsSuccessStatusCode)
                         {
@@ -205,66 +203,84 @@ namespace DeviceEmulator.Device
     public class DeviceDataStorage
     {
         private const string StorageFolder = "DeviceDataStorage";
+        private static readonly SemaphoreSlim semaphore = new SemaphoreSlim(1, 1000);
+        private static readonly SemaphoreSlim semaphore2 = new SemaphoreSlim(1, 1000);
 
         public static async Task SaveDeviceDataAsync(DeviceData deviceData)
         {
-
-
-            List<DeviceData> deviceDatas = await DeviceDataStorage.LoadAllDeviceDataAsync();
-            var deviceDataf = deviceDatas.FindAll(x => !(x?.Properties?.Find(y => y.Name == "SN")?.Value?.Contains(deviceData.Properties?.ToList()?.Find(t=>t.Name =="SN")?.Value??"") ?? false));
             if (deviceData == null || deviceData.Properties == null)
             {
                 throw new ArgumentException("Invalid device data");
             }
 
-            // Найти SN
-            var snProperty = deviceData.Properties.FirstOrDefault(p => p.Name == "SN");
-            if (snProperty == null)
+            await semaphore.WaitAsync();
+            try
             {
-                throw new ArgumentException("Device SN not found");
-            }
+                List<DeviceData> deviceDatas = await LoadAllDeviceDataAsync();
+                List<DeviceData> deviceDataf = deviceDatas.FindAll(x => !(x?.Properties?.Find(y => y.Name == "SN")?.Value?.Contains(deviceData.Properties?.ToList()?.Find(t => t.Name == "SN")?.Value ?? "") ?? false));
 
-            // Последний Measurement
-            var latestMeasurement = deviceData.Measurements?.LastOrDefault();
-            if (latestMeasurement != null)
+                // Найти SN
+                DeviceProperty? snProperty = deviceData.Properties.FirstOrDefault(p => p.Name == "SN");
+                if (snProperty == null)
+                {
+                    throw new ArgumentException("Device SN not found");
+                }
+
+                // Последний Measurement
+                Measurement? latestMeasurement = deviceData.Measurements?.LastOrDefault();
+                if (latestMeasurement != null)
+                {
+                    deviceData.Measurements = new List<Measurement> { latestMeasurement };
+                }
+
+                // Создать папку если не существует
+                if (!Directory.Exists($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}"))
+                {
+                    Directory.CreateDirectory($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}");
+                }
+
+                deviceDataf.Add(deviceData);
+
+                // Сохранить данные в JSON файл
+                string filePath = Path.Combine($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}", $"SDevice.json");
+                string json = JsonSerializer.Serialize(deviceDataf, new JsonSerializerOptions { WriteIndented = true });
+                await File.WriteAllTextAsync(filePath, json);
+            }
+            finally
             {
-                deviceData.Measurements = new List<Measurement> { latestMeasurement };
+                semaphore.Release();
             }
-
-            // Создать папку если не существует
-            if (!Directory.Exists($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}" ))
-            {
-                Directory.CreateDirectory($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}");
-            }
-
-            deviceDataf.Add(deviceData);
-            // Сохранить данные в JSON файл
-            string filePath = Path.Combine($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}", $"SDevice.json");
-            var json = JsonSerializer.Serialize(deviceDataf, new JsonSerializerOptions { WriteIndented = true });
-            await File.WriteAllTextAsync(filePath, json);
         }
 
         public static async Task<List<DeviceData>> LoadAllDeviceDataAsync()
         {
-            var deviceDataList = new List<DeviceData>();
-
-            if (!Directory.Exists($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}"))
+            await semaphore2.WaitAsync();
+            try
             {
-                Directory.CreateDirectory($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}");
-            }
-            string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, StorageFolder, "SDevice.json");
-            if (File.Exists(filePath) ){
+                List<DeviceData> deviceDataList = new List<DeviceData>();
 
-                    var json = await File.ReadAllTextAsync(filePath);
-                    var deviceData = JsonSerializer.Deserialize<List<DeviceData>>(json);
+                if (!Directory.Exists($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}"))
+                {
+                    Directory.CreateDirectory($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}");
+                }
+
+                string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, StorageFolder, "SDevice.json");
+                if (File.Exists(filePath))
+                {
+                    string json = await File.ReadAllTextAsync(filePath);
+                    List<DeviceData>? deviceData = JsonSerializer.Deserialize<List<DeviceData>>(json);
                     if (deviceData != null)
                     {
                         deviceDataList.AddRange(deviceData);
                     }
-                
+                }
+
+                return deviceDataList;
             }
-            
-            return deviceDataList;
+            finally
+            {
+                semaphore2.Release();
+            }
         }
     }
 }
