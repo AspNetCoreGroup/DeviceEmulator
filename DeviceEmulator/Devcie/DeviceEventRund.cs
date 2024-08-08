@@ -203,8 +203,7 @@ namespace DeviceEmulator.Device
     public class DeviceDataStorage
     {
         private const string StorageFolder = "DeviceDataStorage";
-        private static readonly SemaphoreSlim semaphore = new SemaphoreSlim(1, 1000);
-        private static readonly SemaphoreSlim semaphore2 = new SemaphoreSlim(1, 1000);
+        private static readonly object _lock = new object();
 
         public static async Task SaveDeviceDataAsync(DeviceData deviceData)
         {
@@ -213,49 +212,44 @@ namespace DeviceEmulator.Device
                 throw new ArgumentException("Invalid device data");
             }
 
-            await semaphore.WaitAsync();
-            try
+            // Найти SN
+            DeviceProperty? snProperty = deviceData.Properties.FirstOrDefault(p => p.Name == "SN");
+            if (snProperty == null)
             {
-                List<DeviceData> deviceDatas = await LoadAllDeviceDataAsync();
-                List<DeviceData> deviceDataf = deviceDatas.FindAll(x => !(x?.Properties?.Find(y => y.Name == "SN")?.Value?.Contains(deviceData.Properties?.ToList()?.Find(t => t.Name == "SN")?.Value ?? "") ?? false));
+                throw new ArgumentException("Device SN not found");
+            }
 
-                // Найти SN
-                DeviceProperty? snProperty = deviceData.Properties.FirstOrDefault(p => p.Name == "SN");
-                if (snProperty == null)
-                {
-                    throw new ArgumentException("Device SN not found");
-                }
+            // Последний Measurement
+            Measurement? latestMeasurement = deviceData.Measurements?.LastOrDefault();
+            if (latestMeasurement != null)
+            {
+                deviceData.Measurements = new List<Measurement> { latestMeasurement };
+            }
 
-                // Последний Measurement
-                Measurement? latestMeasurement = deviceData.Measurements?.LastOrDefault();
-                if (latestMeasurement != null)
-                {
-                    deviceData.Measurements = new List<Measurement> { latestMeasurement };
-                }
-
+            lock (_lock)
+            {
                 // Создать папку если не существует
                 if (!Directory.Exists($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}"))
                 {
                     Directory.CreateDirectory($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}");
                 }
 
+                List<DeviceData> deviceDatas = DeviceDataStorage.LoadAllDeviceDataAsync().Result;
+                List<DeviceData> deviceDataf = deviceDatas.FindAll(x => !(x?.Properties?.Find(y => y.Name == "SN")?.Value?.Contains(deviceData.Properties?.ToList()?.Find(t => t.Name == "SN")?.Value ?? "") ?? false));
                 deviceDataf.Add(deviceData);
 
                 // Сохранить данные в JSON файл
                 string filePath = Path.Combine($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}", $"SDevice.json");
                 string json = JsonSerializer.Serialize(deviceDataf, new JsonSerializerOptions { WriteIndented = true });
-                await File.WriteAllTextAsync(filePath, json);
+                File.WriteAllText(filePath, json);
             }
-            finally
-            {
-                semaphore.Release();
-            }
+
         }
 
-        public static async Task<List<DeviceData>> LoadAllDeviceDataAsync()
+        public static  Task<List<DeviceData>> LoadAllDeviceDataAsync()
         {
-            await semaphore2.WaitAsync();
-            try
+
+            lock (_lock)
             {
                 List<DeviceData> deviceDataList = new List<DeviceData>();
 
@@ -263,11 +257,10 @@ namespace DeviceEmulator.Device
                 {
                     Directory.CreateDirectory($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}");
                 }
-
                 string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, StorageFolder, "SDevice.json");
                 if (File.Exists(filePath))
                 {
-                    string json = await File.ReadAllTextAsync(filePath);
+                    string json = File.ReadAllText(filePath);
                     List<DeviceData>? deviceData = JsonSerializer.Deserialize<List<DeviceData>>(json);
                     if (deviceData != null)
                     {
@@ -275,12 +268,93 @@ namespace DeviceEmulator.Device
                     }
                 }
 
-                return deviceDataList;
+                return Task.FromResult(deviceDataList);
             }
-            finally
-            {
-                semaphore2.Release();
-            }
+
         }
     }
+
+    //public class DeviceDataStorage
+    //{
+    //    private const string StorageFolder = "DeviceDataStorage";
+    //    private static readonly SemaphoreSlim semaphoreWrite = new SemaphoreSlim(1, 1000);
+    //    private static readonly SemaphoreSlim semaphoreLoad = new SemaphoreSlim(1, 1000);
+
+    //    public static async Task SaveDeviceDataAsync(DeviceData deviceData)
+    //    {
+    //        if (deviceData == null || deviceData.Properties == null)
+    //        {
+    //            throw new ArgumentException("Invalid device data");
+    //        }
+
+    //            List<DeviceData> deviceDatas = await LoadAllDeviceDataAsync();
+    //        try
+    //        {
+    //            await semaphoreWrite.WaitAsync();
+    //            List<DeviceData> deviceDataf = deviceDatas.FindAll(x => !(x?.Properties?.Find(y => y.Name == "SN")?.Value?.Contains(deviceData.Properties?.ToList()?.Find(t => t.Name == "SN")?.Value ?? "") ?? false));
+
+    //            // Найти SN
+    //            DeviceProperty? snProperty = deviceData.Properties.FirstOrDefault(p => p.Name == "SN");
+    //            if (snProperty == null)
+    //            {
+    //                throw new ArgumentException("Device SN not found");
+    //            }
+
+    //            // Последний Measurement
+    //            Measurement? latestMeasurement = deviceData.Measurements?.LastOrDefault();
+    //            if (latestMeasurement != null)
+    //            {
+    //                deviceData.Measurements = new List<Measurement> { latestMeasurement };
+    //            }
+
+    //            // Создать папку если не существует
+    //            if (!Directory.Exists($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}"))
+    //            {
+    //                Directory.CreateDirectory($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}");
+    //            }
+
+    //            deviceDataf.Add(deviceData);
+
+    //            // Сохранить данные в JSON файл
+    //            string filePath = Path.Combine($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}", $"SDevice.json");
+    //            string json = JsonSerializer.Serialize(deviceDataf, new JsonSerializerOptions { WriteIndented = true });
+    //            await File.WriteAllTextAsync(filePath, json);
+    //        }
+    //        finally
+    //        {
+    //            semaphoreWrite.Release();
+    //        }
+    //    }
+
+    //    public static async Task<List<DeviceData>> LoadAllDeviceDataAsync()
+    //    {
+    //        await semaphoreLoad.WaitAsync();
+    //        try
+    //        {
+    //            List<DeviceData> deviceDataList = new List<DeviceData>();
+
+    //            if (!Directory.Exists($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}"))
+    //            {
+    //                Directory.CreateDirectory($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}");
+    //            }
+
+    //            string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, StorageFolder, "SDevice.json");
+    //            if (File.Exists(filePath))
+    //            {
+    //                string json = await File.ReadAllTextAsync(filePath);
+    //                List<DeviceData>? deviceData = JsonSerializer.Deserialize<List<DeviceData>>(json);
+    //                if (deviceData != null)
+    //                {
+    //                    deviceDataList.AddRange(deviceData);
+    //                }
+    //            }
+
+    //            return deviceDataList;
+    //        }
+    //        finally
+    //        {
+    //            semaphoreLoad.Release();
+    //        }
+    //    }
+    //}
 }
