@@ -1,4 +1,7 @@
-﻿using DeviceEmulator.BaseDevice;
+﻿using CommonTypeDevice;
+using DeviceEmulator.BaseDevice;
+using System.Diagnostics;
+using System.Text.Json;
 using static DeviceEmulator.FastStorage.FastRTC;
 
 namespace DeviceEmulator.FastStorage
@@ -64,7 +67,9 @@ namespace DeviceEmulator.FastStorage
                 {
                     thisevent();
                 }
-                await Task.Delay(Step*100);
+                Debug.WriteLine("");
+                Debug.WriteLine("Task.Delay" + Step * 1000);
+                await Task.Delay(Step*1000);
             }
             return;
         }

@@ -9,5 +9,6 @@ namespace DeviceEmulatorWeb.Data
     public class DeviceStorege
     {
         public List<EDeviceForeWeb> ForeWebs { set; get; } = new();
+        public List<string> ListSn { set; get; } = new();
     }
 }

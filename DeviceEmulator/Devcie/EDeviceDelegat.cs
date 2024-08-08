@@ -1,4 +1,5 @@
-﻿using CommonTypeDevice.Event;
+﻿using CommonTypeDevice;
+using CommonTypeDevice.Event;
 using CommonTypeDevice.Property;
 using DeviceEmulator.BaseDevice;
 using DeviceEmulator.FastStorage;
@@ -18,35 +19,66 @@ namespace DeviceEmulator.Device
         public override IEnumerable<IProfile> Profiles { get; protected set; } = new List<IProfile>();
         public override IEnumerable<IDeviceEvent> DeviceEvents { get; protected set; } = new List<IDeviceEvent>();
 
-        public override Task<bool> Init(string initStr, CancellationToken cancellationToken)
+        List<DeviceProperty>? _properties = new();
+        string sn = "";
+        DeviceData? deviceData;
+        public override async Task<bool> Init(string sn, CancellationToken cancellationToken)
         {
+            this.sn = sn;
 
+            List<DeviceData> deviceDatas = await DeviceDataStorage.LoadAllDeviceDataAsync();
+            deviceData = deviceDatas.Find(x => x?.Properties?.Find(y => y.Name == "SN")?.Value?.Contains(sn) ?? false);
 
-            Properties = new PropetryCollection(new List<IProperty>
+            if (deviceData == null)
             {
-                new DeviceProperty("SN", GenerateSerialNumber()),
-                new DeviceProperty("DeviceType", GenerateDeviceType())
-            }).Properties;
-            return GenerateProfile(cancellationToken);
+                _properties = new List<DeviceProperty>
+                {
+                    new DeviceProperty("SN", sn),
+                    new DeviceProperty("DeviceType", GenerateDeviceType())
+                };
+                Properties = new PropetryCollection(_properties).Properties;
+
+            }
+            else
+            {
+                Properties = deviceData.Properties;
+                _properties = deviceData.Properties;
+
+            }
+            return await GenerateProfile(cancellationToken);
         }
 
-        private Task<bool> GenerateProfile(CancellationToken cancellationToken)
+        private async Task<bool> GenerateProfile(CancellationToken cancellationToken)
         {
-            RealTimeClock = new FastRTC(new DateTime(2022, 1, 1), DateTime.Now, 60);
-
-            //IRegister u = new RegisterUseRTC(RealTimeClock, "U", 230, new ScaleAndUnit() { Scale = 0, Unit = 1 }, IncrementTipe.UpDown);
-
-            //IRegister I = new RegisterUseRTC(RealTimeClock, "I", 50, new ScaleAndUnit() { Scale = 0, Unit = 2 }, IncrementTipe.UpDown);
-
-            IRegister Ain = new RegisterUseRTC(RealTimeClock, 1, 10, new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
-            IRegister Aout = new RegisterUseRTC(RealTimeClock, 2, 10, new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
-            IRegister Rin = new RegisterUseRTC(RealTimeClock, 3, 10, new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
-            IRegister Rout = new RegisterUseRTC(RealTimeClock, 4, 10, new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
 
 
+            if (deviceData == null)
+                RealTimeClock = new FastRTC(new DateTime(2024, 1, 1), DateTime.Now, 60);
+            else
+            {
 
+                var dateTime = deviceData.Measurements?.ElementAtOrDefault(0)?.DateTime;
+                RealTimeClock = new FastRTC(dateTime ?? new DateTime(2024, 1, 1), DateTime.Now, 60);
+            }
 
-
+            IRegister Ain;
+            IRegister Aout;
+            IRegister Rin;
+            IRegister Rout;
+            if (deviceData == null)
+            {
+                Ain = new RegisterUseRTC(RealTimeClock, 1, 10, new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
+                Aout = new RegisterUseRTC(RealTimeClock, 2, 10, new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
+                Rin = new RegisterUseRTC(RealTimeClock, 3, 10, new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
+                Rout = new RegisterUseRTC(RealTimeClock, 4, 10, new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
+            }
+            else
+            {
+                Ain = new RegisterUseRTC(RealTimeClock, 1, Convert.ToUInt32(deviceData?.Measurements?.Find(x => x.MeasurumentId == 1)?.Value ?? 10), new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
+                Aout = new RegisterUseRTC(RealTimeClock, 2, Convert.ToUInt32(deviceData?.Measurements?.Find(x => x.MeasurumentId == 2)?.Value ?? 10), new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
+                Rin = new RegisterUseRTC(RealTimeClock, 3, Convert.ToUInt32(deviceData?.Measurements?.Find(x => x.MeasurumentId == 3)?.Value ?? 10), new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
+                Rout = new RegisterUseRTC(RealTimeClock, 4, Convert.ToUInt32(deviceData?.Measurements?.Find(x => x.MeasurumentId == 4)?.Value ?? 10), new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
+            }
 
             Registers = new List<IRegister>()
             {
@@ -75,28 +107,28 @@ namespace DeviceEmulator.Device
                 new ProfileUseRTC(RealTimeClock,RegistersHour,"Hour", 3600 )
             };
 
-            IDeviceEvent Event1 = new DeviceEventRundWeb(1, 1, Profiles,Properties);//"Перезагрузка устройства" );
-            IDeviceEvent Event2 = new DeviceEventRundWeb(2, 1, Profiles,Properties);//"Вскрытие пломбы клеммной крышки");
-            IDeviceEvent Event3 = new DeviceEventRundWeb(3, 1, Profiles,Properties);//"Вскрытие пломбы корпуса" );
-            IDeviceEvent Event4 = new DeviceEventRundWeb(4, 1, Profiles,Properties);//"Вскрытие пломбы отсека сменного модуля" );
-            IDeviceEvent Event5 = new DeviceEventRundWeb(5, 1, Profiles,Properties);//"Сброс состояний пломб" );
-            IDeviceEvent Event6 = new DeviceEventRundWeb(6, 1, Profiles,Properties);//"Попытка несанкционированного доступа" );
-            IDeviceEvent Event7 = new DeviceEventRundWeb(7, 1, Profiles,Properties);//"Отключение реле нагрузки по превышению лимита активной мощности" );
-            IDeviceEvent Event8 = new DeviceEventRundWeb(8, 1, Profiles,Properties);//"Отключение реле нагрузки по превышению напряжения" );
+            IDeviceEvent Event1 = new DeviceEventRundWeb(1, 1, Profiles, Properties);//"Перезагрузка устройства" );
+            IDeviceEvent Event2 = new DeviceEventRundWeb(2, 1, Profiles, Properties);//"Вскрытие пломбы клеммной крышки");
+            IDeviceEvent Event3 = new DeviceEventRundWeb(3, 1, Profiles, Properties);//"Вскрытие пломбы корпуса" );
+            IDeviceEvent Event4 = new DeviceEventRundWeb(4, 1, Profiles, Properties);//"Вскрытие пломбы отсека сменного модуля" );
+            IDeviceEvent Event5 = new DeviceEventRundWeb(5, 1, Profiles, Properties);//"Сброс состояний пломб" );
+            IDeviceEvent Event6 = new DeviceEventRundWeb(6, 1, Profiles, Properties);//"Попытка несанкционированного доступа" );
+            IDeviceEvent Event7 = new DeviceEventRundWeb(7, 1, Profiles, Properties);//"Отключение реле нагрузки по превышению лимита активной мощности" );
+            IDeviceEvent Event8 = new DeviceEventRundWeb(8, 1, Profiles, Properties);//"Отключение реле нагрузки по превышению напряжения" );
             IDeviceEvent Event9 = new DeviceEventRundWeb(9, 1, Profiles, Properties);//"Изменение заводского номера счетчика" );
-            IDeviceEvent Event10 = new DeviceEventRundWeb(10, 1, Profiles,Properties);// "Изменение связного адреса счетчика" );
-            IDeviceEvent Event11 = new DeviceEventRundWeb(11, 1, Profiles,Properties);// "Время изменено" );
-            IDeviceEvent Event12 = new DeviceEventRundWeb(12, 1, Profiles,Properties);// "Пропадание фазного напряжения фазы A" );
-            IDeviceEvent Event13 = new DeviceEventRundWeb(13, 1, Profiles,Properties);// "Пропадание фазного напряжения фазы B" );
-            IDeviceEvent Event14 = new DeviceEventRundWeb(14, 1, Profiles,Properties);// "Пропадание фазного напряжения фазы C" );
-            IDeviceEvent Event15 = new DeviceEventRundWeb(15, 1, Profiles,Properties);// "Фаза А - превышение максимального тока" );
-            IDeviceEvent Event16 = new DeviceEventRundWeb(16, 1, Profiles,Properties);// "Фаза В - превышение максимального тока" );
-            IDeviceEvent Event17 = new DeviceEventRundWeb(17, 1, Profiles,Properties);// "Фаза С - превышение максимального тока" );
-            IDeviceEvent Event18 = new DeviceEventRundWeb(18, 1, Profiles,Properties);// "Превышение напряжения - порог №1" );
-            IDeviceEvent Event19 = new DeviceEventRundWeb(19, 1, Profiles,Properties);// "Превышение напряжения - порог №2" );
-            IDeviceEvent Event20 = new DeviceEventRundWeb(20, 1, Profiles,Properties);// "Превышение максимального тока прибора" );
-            IDeviceEvent Event21 = new DeviceEventRundWeb(21, 1, Profiles,Properties);// "Превышение установленного порога" );
-            IDeviceEvent Event22 = new DeviceEventRundWeb(22, 1, Profiles,Properties);// "Батарея заряжена" );
+            IDeviceEvent Event10 = new DeviceEventRundWeb(10, 1, Profiles, Properties);// "Изменение связного адреса счетчика" );
+            IDeviceEvent Event11 = new DeviceEventRundWeb(11, 1, Profiles, Properties);// "Время изменено" );
+            IDeviceEvent Event12 = new DeviceEventRundWeb(12, 1, Profiles, Properties);// "Пропадание фазного напряжения фазы A" );
+            IDeviceEvent Event13 = new DeviceEventRundWeb(13, 1, Profiles, Properties);// "Пропадание фазного напряжения фазы B" );
+            IDeviceEvent Event14 = new DeviceEventRundWeb(14, 1, Profiles, Properties);// "Пропадание фазного напряжения фазы C" );
+            IDeviceEvent Event15 = new DeviceEventRundWeb(15, 1, Profiles, Properties);// "Фаза А - превышение максимального тока" );
+            IDeviceEvent Event16 = new DeviceEventRundWeb(16, 1, Profiles, Properties);// "Фаза В - превышение максимального тока" );
+            IDeviceEvent Event17 = new DeviceEventRundWeb(17, 1, Profiles, Properties);// "Фаза С - превышение максимального тока" );
+            IDeviceEvent Event18 = new DeviceEventRundWeb(18, 1, Profiles, Properties);// "Превышение напряжения - порог №1" );
+            IDeviceEvent Event19 = new DeviceEventRundWeb(19, 1, Profiles, Properties);// "Превышение напряжения - порог №2" );
+            IDeviceEvent Event20 = new DeviceEventRundWeb(20, 1, Profiles, Properties);// "Превышение максимального тока прибора" );
+            IDeviceEvent Event21 = new DeviceEventRundWeb(21, 1, Profiles, Properties);// "Превышение установленного порога" );
+            IDeviceEvent Event22 = new DeviceEventRundWeb(22, 1, Profiles, Properties);// "Батарея заряжена" );
             IDeviceEvent Event23 = new DeviceEventRundWeb(23, 1, Profiles, Properties);// "Срабатывание сигнализации");
 
 
@@ -128,21 +160,22 @@ namespace DeviceEmulator.Device
             };
 
             List<IncreaseRegister> IncreaseRegister = new List<IncreaseRegister>();
-            foreach (var i in Registers)
+            foreach (IRegister i in Registers)
             {
                 IFRegister fRegister = (IFRegister)i;
                 IncreaseRegister.Add(new FastRTC.IncreaseRegister(fRegister.IncreaseValue));
             }
 
             List<WriteProfile> WriteProfile = new List<WriteProfile>();
-            foreach (var i in Profiles)
+            foreach (IProfile i in Profiles)
             {
                 IFProfile fRegister = (IFProfile)i;
                 WriteProfile.Add(new FastRTC.WriteProfile(fRegister.WriteProfile));
             }
 
             List<DoEvent> doEvents = new List<DoEvent>();
-            foreach (var i in DeviceEvents)
+
+            foreach (IDeviceEvent i in DeviceEvents)
             {
                 IFEvent fEvent = (IFEvent)i;
                 doEvents.Add(new FastRTC.DoEvent(fEvent.DoEvent));
@@ -150,13 +183,20 @@ namespace DeviceEmulator.Device
 
 
 
-            var IFastRtc = (IFastRtc)RealTimeClock;
+            IFastRtc IFastRtc = (IFastRtc)RealTimeClock;
 
             IFastRtc.Init(IncreaseRegister.ToArray(), WriteProfile.ToArray(), doEvents.ToArray());
 
+            DeviceData data = new()
+            {
+                DeviceEvents = new() { new() { DateTime = this.RealTimeClock.GetRealTimeClock(), EventParameters = new() { new() { Key = 22, Name = "СТАРТ" } } } },
+                //Measurements = await GetAllValuesFromProfiles(profiles),
+                Properties = _properties,
 
+            };
+            DeviceDataStorage.SaveDeviceDataAsync(data);
 
-            return Task.FromResult(RealTimeClock?.StartRtc(cancellationToken) ?? false);
+            return Task.FromResult(RealTimeClock?.StartRtc(cancellationToken) ?? false).Result;
         }
     }
 }

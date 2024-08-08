@@ -1,4 +1,5 @@
-﻿using CommonTypeDevice.Event;
+﻿using CommonTypeDevice;
+using CommonTypeDevice.Event;
 using CommonTypeDevice.Measurument;
 using CommonTypeDevice.Property;
 
@@ -6,7 +7,7 @@ namespace DeviceEmulator.Interfaces
 {
     public interface IDevice: IPropetryCollection
     {
-        Task<bool> Init(string initStr, CancellationToken cancellationToken);
+        Task<bool> Init(string sn, CancellationToken cancellationToken);
         IRealTimeClock? RealTimeClock { get; }
         IEnumerable<IRegister> Registers { get; }
         IEnumerable<IProfile> Profiles { get; }
@@ -84,6 +85,7 @@ namespace DeviceEmulator.Interfaces
         uint Period { get; } //sek
 
         Task<IEnumerable<IValue>?> GetValues();
+        Task<IEnumerable<IValue>?> GetLast();
 
         Task<IEnumerable<IValue>?> GetValues(DateTime from, DateTime to);
         Task StartMonitoring(CancellationToken token);

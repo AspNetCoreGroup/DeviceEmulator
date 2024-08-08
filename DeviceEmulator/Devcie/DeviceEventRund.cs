@@ -4,6 +4,7 @@ using CommonTypeDevice.Measurument;
 using CommonTypeDevice.Property;
 using DeviceEmulator.Interfaces;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
@@ -34,8 +35,25 @@ namespace DeviceEmulator.Device
                     Properties = await GetAllProppertys(properties),
 
                 };
-                Debug.WriteLine("send");
+
+                DeviceData s = new()
+                {
+                    DeviceEvents = new() { new() { DateTime = this.DateTime, EventParameters = this.EventParameters } },
+                    Measurements = await GetLast(profiles),
+                    Properties = await GetAllProppertys(properties),
+
+                };
+                //List<DeviceData> deviceDatas = await DeviceDataStorage.LoadAllDeviceDataAsync();
+                //var deviceData = deviceDatas.Find(x => x?.Properties?.Find(y => y.Name == "SN")?.Value?.Contains(properties?.ToList()?.Find(t=>t.Name =="SN")?.Value??"") ?? false);
+
                 Send(data);
+                await DeviceDataStorage.SaveDeviceDataAsync(s);
+                Debug.WriteLine("send");
+
+            }
+            else
+            {
+                Debug.Write("no event ");
             }
         }
 
@@ -63,7 +81,27 @@ namespace DeviceEmulator.Device
                 }
             }
 
+            Debug.WriteLine("Measurements Count");
+            Debug.WriteLine(allValues.Count());
+            return allValues;
+        }
 
+        public async Task<List<Measurement>> GetLast(IEnumerable<IProfile> profiles)
+        {
+            List<Measurement> allValues = new List<Measurement>();
+
+            foreach (IProfile profile in profiles)
+            {
+                IEnumerable<IValue>? values = await profile.GetLast();
+                if (values != null)
+                {
+                    foreach (IValue value in values)
+                        allValues.Add(value.GetMeasurement());
+                }
+            }
+
+            Debug.WriteLine("Measurements Count");
+            Debug.WriteLine(allValues.Count());
             return allValues;
         }
 
@@ -73,26 +111,12 @@ namespace DeviceEmulator.Device
             if (deviceData != null)
             {
                 string _choosenDirectory = AppDomain.CurrentDomain.BaseDirectory;
-                //ServerDataStorageConfig? server_config = new();
                 try
                 {
-                    //using (TcpClient client = new TcpClient())
-                    //{
                     using (HttpClient client2 = new HttpClient())
                     {
-                        //await client.ConnectAsync(ipAddress, port);
                         client2.BaseAddress = new Uri($"http://{ServerDataStorageConfig.ipAddres}:{ServerDataStorageConfig.port}");
-                        string propertiesJson = JsonSerializer.Serialize(deviceData.Properties);
-                        string deviceEventsJson = JsonSerializer.Serialize(deviceData.DeviceEvents);
-                        string measurementsJson = JsonSerializer.Serialize(deviceData.Measurements);
 
-                        // Create the content for the POST request
-                        //FormUrlEncodedContent content = new FormUrlEncodedContent(new[]
-                        //                        {
-                        //    new KeyValuePair<string, string>("Properties", propertiesJson),
-                        //    new KeyValuePair<string, string>("DeviceEvents", deviceEventsJson),
-                        //    new KeyValuePair<string, string>("Measurements", measurementsJson)
-                        //});
                         string strD = JsonSerializer.Serialize(deviceData);
                         JsonContent content = JsonContent.Create(deviceData);
                         var contentstr = new StringContent(strD, Encoding.UTF8, "application/json");
@@ -135,10 +159,12 @@ namespace DeviceEmulator.Device
         public List<EventItem> EventParameters { get; set; }
         public DateTime DateTime { get; set; }
 
-        public virtual async Task DoEvent()
+        public virtual Task DoEvent()
         {
-
+            throw new NotImplementedException();
         }
+
+
 
         /// <summary>
         /// With a Chance percentage, returns the result and fills EventParameters with a parameter with a timeout of 15 seconds
@@ -147,7 +173,7 @@ namespace DeviceEmulator.Device
         public async Task<IDeviceEvent?> Get()
         {
             Dictionary<int, string> dictionary = EventDictionary.dictionary;
-            await Task.Delay(15000); // Simulate 15 seconds timeout
+            // await Task.Delay(15000); // Simulate 15 seconds timeout
 
             Random random = new Random();
             if (random.Next(100) < Chance) // If the random number is within the chance range
@@ -173,5 +199,72 @@ namespace DeviceEmulator.Device
     {
         public static string ipAddres { set; get; } = "127.0.0.1";
         public static string port { set; get; } = "5247";
+    }
+
+
+    public class DeviceDataStorage
+    {
+        private const string StorageFolder = "DeviceDataStorage";
+
+        public static async Task SaveDeviceDataAsync(DeviceData deviceData)
+        {
+
+
+            List<DeviceData> deviceDatas = await DeviceDataStorage.LoadAllDeviceDataAsync();
+            var deviceDataf = deviceDatas.FindAll(x => !(x?.Properties?.Find(y => y.Name == "SN")?.Value?.Contains(deviceData.Properties?.ToList()?.Find(t=>t.Name =="SN")?.Value??"") ?? false));
+            if (deviceData == null || deviceData.Properties == null)
+            {
+                throw new ArgumentException("Invalid device data");
+            }
+
+            // Найти SN
+            var snProperty = deviceData.Properties.FirstOrDefault(p => p.Name == "SN");
+            if (snProperty == null)
+            {
+                throw new ArgumentException("Device SN not found");
+            }
+
+            // Последний Measurement
+            var latestMeasurement = deviceData.Measurements?.LastOrDefault();
+            if (latestMeasurement != null)
+            {
+                deviceData.Measurements = new List<Measurement> { latestMeasurement };
+            }
+
+            // Создать папку если не существует
+            if (!Directory.Exists($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}" ))
+            {
+                Directory.CreateDirectory($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}");
+            }
+
+            deviceDataf.Add(deviceData);
+            // Сохранить данные в JSON файл
+            string filePath = Path.Combine($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}", $"SDevice.json");
+            var json = JsonSerializer.Serialize(deviceDataf, new JsonSerializerOptions { WriteIndented = true });
+            await File.WriteAllTextAsync(filePath, json);
+        }
+
+        public static async Task<List<DeviceData>> LoadAllDeviceDataAsync()
+        {
+            var deviceDataList = new List<DeviceData>();
+
+            if (!Directory.Exists($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}"))
+            {
+                Directory.CreateDirectory($"{AppDomain.CurrentDomain.BaseDirectory}{StorageFolder}");
+            }
+            string filePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, StorageFolder, "SDevice.json");
+            if (File.Exists(filePath) ){
+
+                    var json = await File.ReadAllTextAsync(filePath);
+                    var deviceData = JsonSerializer.Deserialize<List<DeviceData>>(json);
+                    if (deviceData != null)
+                    {
+                        deviceDataList.AddRange(deviceData);
+                    }
+                
+            }
+            
+            return deviceDataList;
+        }
     }
 }

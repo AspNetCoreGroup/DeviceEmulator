@@ -25,13 +25,20 @@ namespace DeviceEmulator.UseRTC
             _cancellationTokenSource = new CancellationTokenSource();
         }
 
-        int lastget = 0;
+        int lastIndex = 0;
 
         public Task<IEnumerable<IValue>?> GetValues()
         {
-            var tmp = _values.Skip(lastget);
-            lastget = _values.Count();
+            var tmp = _values.Skip(lastIndex);
+            Debug.WriteLine(lastIndex);
+            lastIndex = _values.Count();
             return Task.FromResult<IEnumerable<IValue>?>(tmp);
+        }
+
+        public Task<IEnumerable<IValue>?> GetLast()
+        {
+
+            return Task.FromResult<IEnumerable<IValue>?>(_values.TakeLast(4));
         }
 
         public Task<IEnumerable<IValue>?> GetValues(DateTime from, DateTime to)

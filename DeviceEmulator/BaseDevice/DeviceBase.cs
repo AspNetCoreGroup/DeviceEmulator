@@ -21,12 +21,19 @@ namespace DeviceEmulator.BaseDevice
 
         public abstract IEnumerable<IDeviceEvent> DeviceEvents { get; protected set; }
 
-        public abstract Task<bool> Init(string initStr, CancellationToken cancellationToken);
+        public abstract Task<bool> Init(string sn, CancellationToken cancellationToken);
 
-        protected string GenerateSerialNumber()
+        public static string GenerateSerialNumber()
         {
             Random random = new Random();
             return new string(Enumerable.Repeat("0123456789", 10).Select(s => s[random.Next(s.Length)]).ToArray());
+        }
+
+        public static string GenerateSerialNumber2()
+        {
+            string[] deviceTypes = { "11111", "22222"};
+            Random random = new Random();
+            return deviceTypes[random.Next(deviceTypes.Length)];
         }
 
         protected virtual string GenerateDeviceType()
