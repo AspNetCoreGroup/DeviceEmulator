@@ -67,8 +67,8 @@ namespace DeviceEmulator.FastStorage
                 {
                     thisevent();
                 }
-                Debug.WriteLine("");
-                Debug.WriteLine("Task.Delay" + Step * 1000);
+                //Debug.WriteLine("");
+                //Debug.WriteLine("Task.Delay" + Step * 1000);
                 await Task.Delay(Step*1000);
             }
             return;
