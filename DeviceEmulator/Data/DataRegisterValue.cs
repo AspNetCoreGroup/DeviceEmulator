@@ -1,4 +1,4 @@
-﻿using CommonTypeDevice.Measurument;
+﻿using CommonTypeDevice.MeasurumentData;
 using DeviceEmulator.Interfaces;
 using System.Collections.Generic;
 
@@ -20,7 +20,7 @@ namespace DeviceEmulator.Data
             _unit = unit;
         }
 
-        public Measurement GetMeasurement()
+        public MeasurementData GetMeasurement()
         {
             return new() { DateTime = _timestamp, Value = _value, MeasurumentId = _MeasurumentId, Unit = _unit };
         }

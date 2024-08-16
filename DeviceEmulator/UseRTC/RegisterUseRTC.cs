@@ -1,4 +1,4 @@
-﻿using CommonTypeDevice.Measurument;
+﻿using CommonTypeDevice.MeasurumentData;
 using DeviceEmulator.Interfaces;
 using System.Diagnostics;
 using System.Threading;
@@ -96,7 +96,7 @@ namespace DeviceEmulator.BaseDevice
 
         void IFRegister.IncreaseValue() => IncreaseValue();
 
-        public Measurement GetMeasurement()
+        public MeasurementData GetMeasurement()
         {
             return new() {  Value = Value, MeasurumentId = MeasurumentId, Unit = ScaleAndUnit.Unit };
         }

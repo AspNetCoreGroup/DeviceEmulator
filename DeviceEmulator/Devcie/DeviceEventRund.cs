@@ -1,6 +1,6 @@
 ﻿using CommonTypeDevice;
 using CommonTypeDevice.Event;
-using CommonTypeDevice.Measurument;
+using CommonTypeDevice.MeasurumentData;
 using CommonTypeDevice.Property;
 using DeviceEmulator.Interfaces;
 using System.Diagnostics;
@@ -65,9 +65,9 @@ namespace DeviceEmulator.Device
             return allProperty;
         }
 
-        public async Task<List<Measurement>> GetAllValuesFromProfiles(IEnumerable<IProfile> profiles)
+        public async Task<List<MeasurementData>> GetAllValuesFromProfiles(IEnumerable<IProfile> profiles)
         {
-            List<Measurement> allValues = new List<Measurement>();
+            List<MeasurementData> allValues = new List<MeasurementData>();
 
             foreach (IProfile profile in profiles)
             {
@@ -84,9 +84,9 @@ namespace DeviceEmulator.Device
             return allValues;
         }
 
-        public async Task<List<Measurement>> GetLast(IEnumerable<IProfile> profiles)
+        public async Task<List<MeasurementData>> GetLast(IEnumerable<IProfile> profiles)
         {
-            List<Measurement> allValues = new List<Measurement>();
+            List<MeasurementData> allValues = new List<MeasurementData>();
 
             foreach (IProfile profile in profiles)
             {
@@ -220,10 +220,10 @@ namespace DeviceEmulator.Device
             }
 
             // Последний Measurement
-            Measurement? latestMeasurement = deviceData.Measurements?.LastOrDefault();
+            MeasurementData? latestMeasurement = deviceData.Measurements?.LastOrDefault();
             if (latestMeasurement != null)
             {
-                deviceData.Measurements = new List<Measurement> { latestMeasurement };
+                deviceData.Measurements = new List<MeasurementData> { latestMeasurement };
             }
 
             lock (_lock)
