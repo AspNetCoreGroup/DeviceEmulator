@@ -51,7 +51,7 @@ namespace DeviceEmulator.Device
             }
             else
             {
-                Debug.Write("no event ");
+                //Debug.Write("no event ");
             }
         }
 
@@ -79,8 +79,8 @@ namespace DeviceEmulator.Device
                 }
             }
 
-            Debug.WriteLine("Measurements Count");
-            Debug.WriteLine(allValues.Count());
+            //Debug.WriteLine("Measurements Count");
+            //Debug.WriteLine(allValues.Count());
             return allValues;
         }
 
@@ -98,8 +98,8 @@ namespace DeviceEmulator.Device
                 }
             }
 
-            Debug.WriteLine("Measurements Count");
-            Debug.WriteLine(allValues.Count());
+            //Debug.WriteLine("Measurements Count");
+            //Debug.WriteLine(allValues.Count());
             return allValues;
         }
 
@@ -135,7 +135,7 @@ namespace DeviceEmulator.Device
                 catch (Exception ex)
                 {
                     Debug.WriteLine("Ошибка при подключении или обмене данными с сервером: " + ex.Message);
-                    await Task.Delay(2000); // Ожидание 2 секунд перед отправкой следующего запроса
+                   // await Task.Delay(2000); // Ожидание 2 секунд перед отправкой следующего запроса
                 }
             }
         }

@@ -51,14 +51,16 @@ namespace DeviceEmulator.Device
         private async Task<bool> GenerateProfile(CancellationToken cancellationToken)
         {
 
+            DateTime dt = DateTime.Now;
+            dt = dt.AddMonths(-3);
 
             if (deviceData == null)
-                RealTimeClock = new FastRTC(new DateTime(2024, 1, 1), DateTime.Now, 60);
+                RealTimeClock = new FastRTC(dt, DateTime.Now, 60);
             else
             {
 
                 var dateTime = deviceData.Measurements?.ElementAtOrDefault(0)?.DateTime;
-                RealTimeClock = new FastRTC(dateTime ?? new DateTime(2024, 1, 1), DateTime.Now, 60);
+                RealTimeClock = new FastRTC(dateTime ?? dt, DateTime.Now, 60);
             }
 
             IRegister Ain;
