@@ -51,7 +51,7 @@ namespace DeviceEmulator.Device
         private async Task<bool> GenerateProfile(CancellationToken cancellationToken)
         {
 
-            DateTime dt = DateTime.Now;
+            DateTime dt = DateTime.Now.Date;
             dt = dt.AddMonths(-3);
 
             if (deviceData == null)
