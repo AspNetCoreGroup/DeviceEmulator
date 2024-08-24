@@ -38,7 +38,7 @@ namespace DeviceEmulator.UseRTC
         public Task<IEnumerable<IValue>?> GetLast()
         {
 
-            return Task.FromResult<IEnumerable<IValue>?>(_values.TakeLast(4));
+            return Task.FromResult<IEnumerable<IValue>?>(_values.TakeLast(2));
         }
 
         public Task<IEnumerable<IValue>?> GetValues(DateTime from, DateTime to)

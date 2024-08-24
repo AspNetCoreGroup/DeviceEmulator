@@ -64,22 +64,22 @@ namespace DeviceEmulator.Device
             }
 
             IRegister Ain;
-            IRegister Aout;
+            //IRegister Aout;
             IRegister Rin;
-            IRegister Rout;
+            //IRegister Rout;
             if (deviceData == null)
             {
                 Ain = new RegisterUseRTC(RealTimeClock, 1, 10, new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
-                Aout = new RegisterUseRTC(RealTimeClock, 2, 10, new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
+                //Aout = new RegisterUseRTC(RealTimeClock, 2, 10, new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
                 Rin = new RegisterUseRTC(RealTimeClock, 3, 10, new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
-                Rout = new RegisterUseRTC(RealTimeClock, 4, 10, new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
+               // Rout = new RegisterUseRTC(RealTimeClock, 4, 10, new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
             }
             else
             {
                 Ain = new RegisterUseRTC(RealTimeClock, 1, Convert.ToUInt32(deviceData?.Measurements?.Find(x => x.MeasurumentId == 1)?.Value ?? 10), new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
-                Aout = new RegisterUseRTC(RealTimeClock, 2, Convert.ToUInt32(deviceData?.Measurements?.Find(x => x.MeasurumentId == 2)?.Value ?? 10), new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
+                //Aout = new RegisterUseRTC(RealTimeClock, 2, Convert.ToUInt32(deviceData?.Measurements?.Find(x => x.MeasurumentId == 2)?.Value ?? 10), new ScaleAndUnit() { Scale = 0, Unit = 3 }, IncrementTipe.Increment);
                 Rin = new RegisterUseRTC(RealTimeClock, 3, Convert.ToUInt32(deviceData?.Measurements?.Find(x => x.MeasurumentId == 3)?.Value ?? 10), new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
-                Rout = new RegisterUseRTC(RealTimeClock, 4, Convert.ToUInt32(deviceData?.Measurements?.Find(x => x.MeasurumentId == 4)?.Value ?? 10), new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
+                //Rout = new RegisterUseRTC(RealTimeClock, 4, Convert.ToUInt32(deviceData?.Measurements?.Find(x => x.MeasurumentId == 4)?.Value ?? 10), new ScaleAndUnit() { Scale = 0, Unit = 4 }, IncrementTipe.Increment);
             }
 
             Registers = new List<IRegister>()
@@ -87,9 +87,9 @@ namespace DeviceEmulator.Device
                 //u,
                 //I,
                 Ain,
-                Aout,
-                Rin,
-                Rout
+               // Aout,
+                Rin
+               // Rout
             };
             //List<IRegister> RegistersCurrent = new List<IRegister>()
             //{
@@ -99,9 +99,9 @@ namespace DeviceEmulator.Device
             List<IRegister> RegistersHour = new List<IRegister>()
             {
                 Ain,
-                Aout,
-                Rin,
-                Rout
+                //Aout,
+                Rin
+                //Rout
             };
             Profiles = new List<IProfile>()
             {
